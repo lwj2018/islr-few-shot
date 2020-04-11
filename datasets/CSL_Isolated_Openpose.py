@@ -10,9 +10,10 @@ import os
 import os.path as osp
 import time
 import matplotlib.pyplot as plt
+import time
 
 # Params
-skeleton_root = "/home/liweijie/skeletons_dataset"
+skeleton_root = "/home/liweijie/Data/skeletons_dataset_npy"
 csv_root = '/home/liweijie/projects/islr-few-shot/csv'
 
 class CSL_Isolated_Openpose(data.Dataset):
@@ -36,6 +37,9 @@ class CSL_Isolated_Openpose(data.Dataset):
         mat = self._load_data(path)
         indices = self.get_sample_indices(mat.shape[0])    
         mat = mat[indices,:,:]
+        if self.is_normalize:
+            for i in range(len(mat)):
+                mat[i] = self.normalize(mat[i])
 
         return mat, lb
         
@@ -44,7 +48,7 @@ class CSL_Isolated_Openpose(data.Dataset):
         return len(self.video_list)
         
     def _parse_list(self):
-        csv_path = osp.join(csv_root, setname + '.csv')
+        csv_path = osp.join(self.csv_root, self.setname + '.csv')
         lines = [x.strip() for x in open(csv_path, 'r').readlines()][1:]
         data = []
         label = []
@@ -62,6 +66,7 @@ class CSL_Isolated_Openpose(data.Dataset):
         print('video number:%d'%(len(self.data)))
 
     def get_sample_indices(self,num_frames):
+        # ignore the first frame
         indices = np.linspace(0,num_frames-1,self.length).astype(int)
         interval = (num_frames-1)//self.length
         if interval>0:
@@ -74,59 +79,12 @@ class CSL_Isolated_Openpose(data.Dataset):
         return indices
     
     def _load_data(self, path):
-        file_list = os.listdir(path)
-        file_list.sort()
-        mat = []
-        for i,file in enumerate(file_list):
-            # 第一帧有问题，先排除
-            if i>0:
-                filename =  osp.join(path,file)
-                f = open(filename,"r")
-                content = f.readlines()
-                try:
-                    mat_i = self.content_to_mat(content)
-                    mat.append(mat_i)
-                except:
-                    print("can not convert this file to mat: "+filename)
-        mat = np.array(mat)
+        start = time.time()
+        print(path)
+        mat = np.load(path+'.npy')
         end = time.time()
+        # print('%.4f s'%(end-start))
         mat = mat.astype(np.float32)
-        return mat
-
-
-    def content_to_mat(self,content):
-        mat = []
-        for i in range(len(content)):
-            if "Body" in content[i]:
-                for j in range(25):
-                    record = content[i+1+j].lstrip().lstrip("[").rstrip("\n").rstrip("]")
-                    joint = [float(x) for x in record.split()]
-                    mat.append(joint)
-            elif "Face" in content[i]:
-                for j in range(70):
-                    record = content[i+1+j].lstrip().lstrip("[").rstrip("\n").rstrip("]")
-                    joint = [float(x) for x in record.split()]
-                    mat.append(joint)
-
-            elif "Left" in content[i]:
-                for j in range(21):
-                    record = content[i+1+j].lstrip().lstrip("[").rstrip("\n").rstrip("]")
-                    joint = [float(x) for x in record.split()]
-                    mat.append(joint)
-
-            elif "Right" in content[i]:
-                for j in range(21):
-                    record = content[i+1+j].lstrip().lstrip("[").rstrip("\n").rstrip("]")
-                    joint = [float(x) for x in record.split()]
-                    mat.append(joint)
-                break
-
-        mat = np.array(mat)
-        # 第三维是置信度，不需要
-        mat = mat[:,0:2]
-        # Normalize
-        if self.is_normalize:
-            mat = self.normalize(mat)
         return mat
 
     def normalize(self,mat):
@@ -153,8 +111,5 @@ def min(array):
 # Test
 if __name__ == '__main__':
     # Path settings
-    skeleton_root = "/home/liweijie/skeletons_dataset"
-    train_file = "../input/train_list.txt"
-    val_file = "../input/val_list.txt"
-    dataset = CSL_Isolated_Openpose(skeleton_root=skeleton_root,list_file=train_file)
-    print(dataset[1000])
+    dataset = CSL_Isolated_Openpose('trainvaltest')
+    print(dataset[1000][1])

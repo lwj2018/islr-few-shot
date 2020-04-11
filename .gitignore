@@ -3,3 +3,4 @@ checkpoint
 .vscode
 *.pyc
 *.pth
+*.npy

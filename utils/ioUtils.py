@@ -22,6 +22,18 @@ def load_global_proto(global_ckpt,args):
     global_novel = global_novel.detach().cuda()
     return global_base, global_novel
 
+def resume_model(model, checkpoint):
+    params_dict = torch.load(checkpoint)
+    state_dict = params_dict['state_dict']
+    model.load_state_dict(state_dict)
+
+    epoch = params_dict['epoch']
+    best = params_dict['best']
+    print("Load model from {}: \n"
+    "Epoch: {}\n"
+    "Best: {:.3f}%".format(checkpoint,epoch,best))
+    return params_dict['epoch'], params_dict['best']
+
 def resume_cnn_from_cnn_gen(model, checkpoint):
     params_dict = torch.load(checkpoint)
     state_dict = params_dict['state_dict']

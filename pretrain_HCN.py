@@ -15,19 +15,20 @@ from utils.ioUtils import *
 from utils.trainUtils import train_cnn
 from utils.testUtils import eval_cnn
 from torch.utils.tensorboard import SummaryWriter
-from datasets.samplers import CategoriesSampler_train, CategoriesSampler_val
+from datasets.samplers import PretrainSampler
 from Arguments import Arguments
 
 # Hyper params 
-epochs = 1000
+epochs = 2000
 learning_rate = 1e-5
+batch_size = 8
 # Options
 shot = 5
 dataset = 'isl'
 store_name = 'HCN'
 gproto_name = 'global_proto'
 checkpoint = '/home/liweijie/projects/SLR/checkpoint/20200315_82.106_HCN_isolated_best.pth.tar'
-log_interval = 20
+log_interval = 100
 device_list = '1'
 num_workers = 8
 model_path = "./checkpoint"
@@ -47,13 +48,12 @@ writer = SummaryWriter(os.path.join('runs/cnn', time.strftime('%Y-%m-%d %H:%M:%S
 
 # Prepare dataset & dataloader
 trainset = CSL_Isolated_Openpose('trainvaltest')
-train_sampler = CategoriesSampler_train(trainset.label, 100,
-                        args.train_way, args.shot, args.query, args.n_base)
+train_sampler = PretrainSampler(trainset.label, args.shot, args.n_base, batch_size)
 train_loader = DataLoader(dataset=trainset, batch_sampler=train_sampler,
                         num_workers=num_workers, pin_memory=True)
+print('Total size of the train set: %d'%(len(train_loader)))
 valset = CSL_Isolated_Openpose('trainvaltest')
-val_sampler = CategoriesSampler_val(valset.label, 100,
-                        args.test_way, args.shot, args.query_val)
+val_sampler = PretrainSampler(valset.label, args.shot, args.n_base, batch_size)
 val_loader = DataLoader(dataset=valset, batch_sampler=val_sampler,
                         num_workers=num_workers, pin_memory=True)
 model = hcn(args.num_class).to(device)

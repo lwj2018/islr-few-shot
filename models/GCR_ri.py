@@ -108,13 +108,13 @@ class Registrator(nn.Module):
     def __init__(self,f_dim,z_dim):
         super(Registrator, self).__init__()
         self.fc_params_support = nn.Sequential(
-        	torch.nn.Linear(1600, 512),
-        	torch.nn.BatchNorm1d(512),
+        	torch.nn.Linear(f_dim, z_dim),
+        	torch.nn.BatchNorm1d(z_dim),
                 torch.nn.ReLU(),
         	)
         self.fc_params_query = nn.Sequential(
-        	torch.nn.Linear(1600, 512),
-        	torch.nn.BatchNorm1d(512),
+        	torch.nn.Linear(f_dim, z_dim),
+        	torch.nn.BatchNorm1d(z_dim),
                 torch.nn.ReLU(),
         	)
 
