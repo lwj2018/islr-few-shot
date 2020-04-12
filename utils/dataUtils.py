@@ -14,3 +14,11 @@ def getDataloader(dataset,args):
     val_loader = DataLoader(dataset=valset, batch_sampler=val_sampler,
                             num_workers=args.num_workers, pin_memory=True)
     return train_loader, val_loader
+
+def getValloader(dataset,args):
+    valset = CSL_Isolated_Openpose('test')
+    val_sampler = CategoriesSampler_val(valset.label, 600,
+                            args.test_way, args.shot, args.query_val)
+    val_loader = DataLoader(dataset=valset, batch_sampler=val_sampler,
+                            num_workers=args.num_workers, pin_memory=True)
+    return val_loader

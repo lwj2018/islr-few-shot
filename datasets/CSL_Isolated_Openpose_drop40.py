@@ -16,7 +16,7 @@ import time
 skeleton_root = "/home/liweijie/Data/skeletons_dataset_npy"
 csv_root = '/home/liweijie/projects/islr-few-shot/csv'
 
-class CSL_Isolated_Openpose(data.Dataset):
+class CSL_Isolated_Openpose2(data.Dataset):
     
     def __init__(self, setname, skeleton_root=skeleton_root, 
             csv_root=csv_root,
@@ -26,6 +26,8 @@ class CSL_Isolated_Openpose(data.Dataset):
         self.csv_root = csv_root
         self.length = length
         self.is_normalize = is_normalize
+        self.n_samples = 50
+        self.n_drop = 40
         
         self._parse_list()
 
@@ -53,12 +55,13 @@ class CSL_Isolated_Openpose(data.Dataset):
         data = []
         label = []
 
-        for l in lines:
-            name, lb = l.split(',')
-            path = osp.join(self.skeleton_root, name)
-            lb = int(lb)
-            data.append(path)
-            label.append(lb)
+        for i,l in enumerate(lines):
+            if i % self.n_samples >= self.n_drop:
+                name, lb = l.split(',')
+                path = osp.join(self.skeleton_root, name)
+                lb = int(lb)
+                data.append(path)
+                label.append(lb)
 
         self.data = data
         self.label = label

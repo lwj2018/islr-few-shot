@@ -92,6 +92,9 @@ def eval_gcr_relation(model, criterion,
                 model(data_shot,data_query,lab,mode='eval')
         # compute the loss
         loss, loss1, loss2, loss3 = criterion(logits, label, logits2, gt, logits3, gt3)
+        # print('logits: {}'.format(logits))
+        # print('out: {}'.format(logits.argmax(-1)))
+        # print('label: {}'.format(label))
 
         # compute the metrics
         acc1 = accuracy(logits, label)[0]
@@ -111,3 +114,51 @@ def eval_gcr_relation(model, criterion,
             recoder.log(epoch,i,len(valloader),mode='Eval')
 
     return recoder.get_avg('val acc1')
+
+def test_gcr(model, criterion,
+          valloader, device, epoch, 
+          log_interval, writer, args, relation):
+    batch_time = AverageMeter()
+    data_time = AverageMeter()
+    avg_loss = AverageMeter()
+    avg_acc = AverageMeter()
+    # Create recorder
+    averagers = [avg_loss, avg_acc]
+    names = ['val loss', 'val acc']
+    recoder = Recorder(averagers,names,writer,batch_time,data_time)
+    # Set evaluation mode
+    model.eval()
+
+    recoder.tik()
+    recoder.data_tik()
+    for i, batch in enumerate(valloader):
+        # measure data loading time
+        recoder.data_tok()
+
+        # get the inputs and labels
+        data, lab = [_.to(device) for _ in batch]
+
+        # forward
+        proto = model.baseModel(data)
+        global_set = torch.cat([model.global_base,model.global_novel])
+        logits = relation(proto,global_set)
+        
+        # compute the loss
+        loss = criterion(logits, lab)
+
+        # compute the metrics
+        acc = accuracy(logits, lab)[0]
+
+        # measure elapsed time
+        recoder.tok()
+        recoder.tik()
+        recoder.data_tik()
+
+        # update average value
+        vals = [loss.item(),acc]
+        recoder.update(vals)
+
+        if i % log_interval == log_interval-1:
+            recoder.log(epoch,i,len(valloader),mode='Test')
+
+    return recoder.get_avg('val acc')

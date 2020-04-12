@@ -66,8 +66,8 @@ class GCR_ri(nn.Module):
         # shape of the dist_metric is: way x total_class
         logits2 = self.relation2(proto_new, global_new)
 
-        similarity = F.normalize(logits2,1,-1)
-        # similarity = logits2
+        # similarity = F.normalize(logits2,1,-1)
+        similarity = logits2
         feature = torch.matmul(similarity, torch.cat([self.global_base,self.global_novel]))
         # shape of data_query is: (query x way) x ...
         # shape of feature is: way x f_dim(1600)
@@ -138,7 +138,8 @@ class Relation1(nn.Module):
         x = torch.cat([x1,x2],2)
         x = F.relu(self.fc1(x))
         x = F.relu(self.fc2(x))
-        x = F.sigmoid(self.fc3(x))
+        x = self.fc3(x)
+        # x = F.sigmoid(x)
         x = x.squeeze(-1)
         return x
 

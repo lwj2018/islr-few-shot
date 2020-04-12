@@ -14,8 +14,6 @@ class CNN_GEN(nn.Module):
     def forward(self, x):
         x = self.cnn.get_feature(x)
         z = torch.cuda.FloatTensor(x.size()).normal_()
-        print('x:{}'.format(x))
-        print('z:{}'.format(z))
         x = self.gen(x,z)
         x = self.cnn.classify(x)
         return x
