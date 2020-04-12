@@ -25,12 +25,12 @@ dataset = 'isl'
 store_name = dataset + '_GCR_ri' + '_%dshot'%(shot)
 summary_name = 'runs/' + store_name
 cnn_ckpt = None#'/home/liweijie/projects/few-shot/checkpoint/20200329/CNN_best.pth.tar'
-global_ckpt = None#'/home/liweijie/projects/few-shot/checkpoint/20200329/global_proto_best.pth'
-cnngen_ckpt = None#'/home/liweijie/projects/few-shot/checkpoint/20200407_CNN_GEN_checkpoint.pth.tar'
+global_ckpt = '/home/liweijie/projects/islr-few-shot/checkpoint/20200412_global_proto_best.pth.tar'
+cnngen_ckpt = '/home/liweijie/projects/islr-few-shot/checkpoint/20200412_HCN_GEN_best.pth.tar'
 gcrr_ckpt = None#'/home/liweijie/projects/few-shot/checkpoint/20200403_miniImage_GCR_r_checkpoint.pth.tar'
 checkpoint = None#'/home/liweijie/projects/few-shot/checkpoint/miniImage_GCR_ri_5shot_best.pth.tar'
 log_interval = 20
-device_list = '2'
+device_list = '1'
 model_path = "./checkpoint"
 
 start_epoch = 0
@@ -65,7 +65,7 @@ if checkpoint is not None:
 global_base, global_novel = load_global_proto(global_ckpt,args)
 
 model = GCR_ri(model_cnn,model_gen,global_base=global_base,global_novel=global_novel,train_way=args.train_way,\
-    test_way=args.test_way, shot=args.shot,query=args.query,query_val=args.query_val).to(device)
+    test_way=args.test_way, shot=args.shot,query=args.query,query_val=args.query_val,f_dim=args.feature_dim).to(device)
 
 # Create loss criterion & optimizer
 criterion = loss_for_gcr_relation()

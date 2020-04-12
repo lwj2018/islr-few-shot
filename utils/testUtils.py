@@ -87,8 +87,6 @@ def eval_gcr_relation(model, criterion,
         p = args.shot * args.test_way
         data_shot = data[:p]
         data_query = data[p:]
-        data_shot = data_shot[:,3:,:]
-        data_query = data_query[:,3:,:]
 
         logits, label, logits2, gt, logits3, gt3 = \
                 model(data_shot,data_query,lab,mode='eval')

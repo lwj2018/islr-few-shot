@@ -1,6 +1,5 @@
 from torch.utils.data import DataLoader
 from datasets.CSL_Isolated_Openpose import CSL_Isolated_Openpose
-from datasets.omniglot import Omniglot
 from datasets.samplers import CategoriesSampler_train, CategoriesSampler_val
 
 def getDataloader(dataset,args):

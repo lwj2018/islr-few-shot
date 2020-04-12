@@ -80,7 +80,6 @@ class CSL_Isolated_Openpose(data.Dataset):
     
     def _load_data(self, path):
         start = time.time()
-        print(path)
         mat = np.load(path+'.npy')
         end = time.time()
         # print('%.4f s'%(end-start))

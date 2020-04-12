@@ -28,9 +28,8 @@ shot = 5
 dataset = 'isl'
 store_name = 'HCN_GEN'
 gproto_name = 'global_proto'
-hcn_ckpt = '/home/liweijie/projects/islr-few-shot/checkpoint/20200412_HCN_best.pth.tar'
-checkpoint = None
-log_interval = 100
+checkpoint = '/home/liweijie/projects/islr-few-shot/checkpoint/20200412_HCN_GEN_best.pth.tar'
+log_interval = 20
 device_list = '1'
 model_path = "./checkpoint"
 num_workers = 8
@@ -59,31 +58,17 @@ val_loader = DataLoader(dataset=valset, batch_sampler=val_sampler,
                         num_workers=num_workers, pin_memory=True)
 model = CNN_GEN(out_dim=args.num_class, f_dim=args.feature_dim).to(device)
 # Resume model
-if hcn_ckpt is not None:
-    model = resume_cnn_for_cnn_gen(model,hcn_ckpt)
 if checkpoint is not None:
     start_epoch, best_acc = resume_model(model, checkpoint)
 # Create loss criterion & optimizer
 criterion = nn.CrossEntropyLoss()
-optimizer = optim.Adam(model.parameters(), lr=learning_rate)
 
-# Start training
-print("Training Started".center(60, '#'))
+print(model.gen.fc1.weight.size())
+
+# Start test
+print("Test Started".center(60, '#'))
 for epoch in range(start_epoch, epochs):
-    # Train the model
-    global_proto = train_cnn(model, criterion, optimizer, train_loader, device, epoch, log_interval, writer, args)
     # Eval the model
     acc = eval_cnn(model, criterion, val_loader, device, epoch, log_interval, writer, args)
-    # Save model
-    # remember best acc and save checkpoint
-    is_best = acc>best_acc
-    best_acc = max(acc, best_acc)
-    save_checkpoint({
-        'epoch': epoch + 1,
-        'state_dict': model.state_dict(),
-        'best': best_acc
-    }, is_best, model_path, store_name)
-    # save_checkpoint(global_proto, is_best, model_path, gproto_name)
-    print("Epoch {} Model Saved".format(epoch+1).center(60, '#'))
 
-print("Training Finished".center(60, '#'))
+print("Test Finished".center(60, '#'))

@@ -61,7 +61,7 @@ if checkpoint is not None:
     start_epoch, best_acc = resume_gcr_model(model, checkpoint, args.n_base)
 global_base, global_novel = load_global_proto(global_ckpt,args)
 model = GCR_relation(model_cnn,global_base=global_base,global_novel=global_novel,train_way=args.train_way,\
-    test_way=args.test_way, shot=args.shot,query=args.query,query_val=args.query_val).to(device)
+    test_way=args.test_way, shot=args.shot,query=args.query,query_val=args.query_val,f_dim=args.feature_dim).to(device)
 
 # Create loss criterion & optimizer
 criterion = loss_for_gcr_relation()
