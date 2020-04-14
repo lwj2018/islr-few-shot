@@ -18,7 +18,7 @@ from Arguments import Arguments
 
 # Hyper params 
 epochs = 2000
-learning_rate = 1e-3
+learning_rate = 1e-4
 # Options
 shot = 5
 dataset = 'isl'
@@ -28,7 +28,7 @@ cnn_ckpt = None#'/home/liweijie/projects/few-shot/checkpoint/20200329/CNN_best.p
 global_ckpt = '/home/liweijie/projects/islr-few-shot/checkpoint/20200412_global_proto_best.pth.tar'
 cnngen_ckpt = '/home/liweijie/projects/islr-few-shot/checkpoint/20200412_HCN_GEN_best.pth.tar'
 gcrr_ckpt = None#'/home/liweijie/projects/few-shot/checkpoint/20200403_miniImage_GCR_r_checkpoint.pth.tar'
-checkpoint = '/home/liweijie/projects/islr-few-shot/checkpoint/isl_GCR_ri_5shot_checkpoint.pth.tar'
+checkpoint = '/home/liweijie/projects/islr-few-shot/checkpoint/20200412_isl_GCR_ri_5shot_best.pth.tar'
 log_interval = 20
 device_list = '0'
 model_path = "./checkpoint"
@@ -79,7 +79,7 @@ lr_scheduler = torch.optim.lr_scheduler.MultiStepLR(optimizer, milestones=[30,60
 lr_scheduler_cnn = torch.optim.lr_scheduler.MultiStepLR(optimizer_cnn, milestones=[30,60], gamma=0.1)
 
 # Start training
-print("Train with global proto integrated, Save global")
+print("Train with global proto integrated, Save integrated model")
 print("Training Started".center(60, '#'))
 for epoch in range(start_epoch, epochs):
     # Train the model

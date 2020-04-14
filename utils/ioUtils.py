@@ -90,3 +90,15 @@ def resume_gcr_model(model, checkpoint, n_base):
     "Epoch: {}\n"
     "Best: {:.3f}%".format(checkpoint,epoch,best))
     return params_dict['epoch'], params_dict['best']
+
+def resume_cnn_part(model, checkpoint):
+    params_dict = torch.load(checkpoint)
+    state_dict = params_dict['state_dict']
+    state_dict = {k : v for k,v in state_dict.items() if not 'fc' in k}
+    model.load_state_dict(state_dict)
+
+    epoch = params_dict['epoch']
+    best = params_dict['best']
+    print("Load part of CNN from {}: \n"
+    "Epoch: {}\n"
+    "Best: {:.3f}%".format(checkpoint,epoch,best))

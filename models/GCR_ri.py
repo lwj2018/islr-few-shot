@@ -72,12 +72,14 @@ class GCR_ri(nn.Module):
         # shape of data_query is: (query x way) x ...
         # shape of feature is: way x f_dim(1600)
         # so the shape of result is (query x way) x way
-        logits = self.relation1(self.baseModel(data_query),feature)
+        q_proto = self.baseModel(data_query)
+        logits = self.relation1(q_proto,feature)
         label = torch.arange(way).repeat(query)
         label = label.type(torch.cuda.LongTensor)
 
-        gt3 = gt.repeat(self.shot)
+        gt3 = gt.repeat(query)
         logits3 = self.relation1(proto.reshape(self.shot*way,-1),torch.cat([self.global_base,self.global_novel]))
+        # logits3 = self.relation1(q_proto.reshape(query*way,-1),torch.cat([self.global_base,self.global_novel]))
 
         return logits, label, logits2, gt, logits3, gt3
 
@@ -158,7 +160,8 @@ class Relation2(nn.Module):
         x = torch.cat([x1,x2],2)
         x = F.relu(self.fc1(x))
         x = F.relu(self.fc2(x))
-        x = F.sigmoid(self.fc3(x))
+        x = self.fc3(x)
+        x = F.sigmoid(x)
         x = x.squeeze(-1)
         return x
 

@@ -9,6 +9,7 @@ class CategoriesSampler_train():
         self.n_shot = n_shot
         self.n_query = n_query
         self.n_base_class = n_base_class
+        self.n_reserve = 40
 
         label_set = list(set(label))
         self.label_set = label_set
@@ -33,7 +34,7 @@ class CategoriesSampler_train():
             for c in classes:
                 if c < self.n_base_class:
                     l = self.m_ind[c]
-                    tmp = torch.randperm(len(l))
+                    tmp = torch.randperm(self.n_reserve)
                     batch.append(l[tmp[:self.n_shot+self.n_query]])
 
                 else:
@@ -93,11 +94,13 @@ class PretrainSampler():
         self.batch_size = batch_size
         # number of samples in a class, !! Specific setting for isl
         n_samples = 50
+        n_reserve = 40
 
         idx_list = []
         for idx, lb in enumerate(label):
             if lb < n_base_class:
-                idx_list.append(idx)
+                if idx % n_samples < n_reserve:
+                    idx_list.append(idx)
             else:
                 if idx % n_samples < n_shot:
                     idx_list.append(idx)

@@ -162,3 +162,52 @@ def test_gcr(model, criterion,
             recoder.log(epoch,i,len(valloader),mode='Test')
 
     return recoder.get_avg('val acc')
+
+def eval_mn_pn(model, criterion,
+          valloader, device, epoch, 
+          log_interval, writer, args):
+    batch_time = AverageMeter()
+    data_time = AverageMeter()
+    avg_loss = AverageMeter()
+    avg_acc = AverageMeter()
+    # Create recorder
+    averagers = [avg_loss,avg_acc]
+    names = ['val loss','val acc']
+    recoder = Recorder(averagers,names,writer,batch_time,data_time)
+    # Set evaluation mode
+    model.eval()
+
+    recoder.tik()
+    recoder.data_tik()
+    for i, batch in enumerate(valloader):
+        # measure data loading time
+        recoder.data_tok()
+
+        # get the inputs and labels
+        data, lab = [_.to(device) for _ in batch]
+
+        # forward
+        p = args.shot * args.test_way
+        data_shot = data[:p]
+        data_query = data[p:]
+
+        y_pred, label = model(data_shot,data_query,mode='eval')
+        # compute the loss
+        loss = criterion(y_pred, label)
+
+        # compute the metrics
+        acc = accuracy(y_pred, label)[0]
+
+        # measure elapsed time
+        recoder.tok()
+        recoder.tik()
+        recoder.data_tik()
+
+        # update average value
+        vals = [loss.item(),acc]
+        recoder.update(vals)
+
+        if i % log_interval == log_interval-1:
+            recoder.log(epoch,i,len(valloader),mode='Eval')
+
+    return recoder.get_avg('val acc')

@@ -20,12 +20,14 @@ class CSL_Isolated_Openpose(data.Dataset):
     
     def __init__(self, setname, skeleton_root=skeleton_root, 
             csv_root=csv_root,
-            length=32, is_normalize=True):
+            length=32, is_normalize=True,
+            is_aug=False):
         self.setname = setname
         self.skeleton_root = skeleton_root
         self.csv_root = csv_root
         self.length = length
         self.is_normalize = is_normalize
+        self.is_aug = is_aug
         
         self._parse_list()
 
@@ -40,6 +42,8 @@ class CSL_Isolated_Openpose(data.Dataset):
         if self.is_normalize:
             for i in range(len(mat)):
                 mat[i] = self.normalize(mat[i])
+        if self.is_aug:
+            mat = self.augmentation(mat)
 
         return mat, lb
         
@@ -83,6 +87,7 @@ class CSL_Isolated_Openpose(data.Dataset):
         mat = np.load(path+'.npy')
         end = time.time()
         # print('%.4f s'%(end-start))
+        # Shape of mat is : T * J * D
         mat = mat.astype(np.float32)
         return mat
 
@@ -97,6 +102,13 @@ class CSL_Isolated_Openpose(data.Dataset):
         mat = (mat-[center_x,center_y])/[(max_x-min_x)/2,(max_y-min_y)/2]
         # TEST
         # print("max_x: %.2f,min_x: %.2f,max_y: %.2f,min_y: %.2f"%(max_x,min_x,max_y,min_y))
+        return mat
+
+    def augmentation(self,mat):
+        amp = 0.05
+        d0,d1,d2 = mat.shape
+        jitter = (np.random.rand(d0,d1,d2)-0.5)*amp*2
+        mat = mat + jitter
         return mat
 
 def min(array):
