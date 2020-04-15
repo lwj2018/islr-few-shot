@@ -12,7 +12,8 @@ from utils.ioUtils import *
 from utils.trainUtils import train_mn_pn
 from utils.testUtils import eval_mn_pn
 from torch.utils.tensorboard import SummaryWriter
-from utils.dataUtils import getDataloader
+from utils.dataUtils import getValloader
+from utils.metricUtils import account_mean_and_std
 from Arguments import Arguments
 
 # Hyper params 
@@ -24,7 +25,7 @@ dataset = 'isl'
 store_name = dataset + '_PN' + '_%dshot'%(shot)
 summary_name = 'runs/' + store_name
 cnn_ckpt = '/home/liweijie/projects/islr-few-shot/checkpoint/20200412_HCN_best.pth.tar'
-checkpoint = None#'/home/liweijie/projects/few-shot/checkpoint/miniImage_PN_checkpoint.pth.tar'
+checkpoint = '/home/liweijie/projects/islr-few-shot/checkpoint/20200415_isl_PN_5shot_best.pth.tar'
 log_interval = 20
 device_list = '1'
 num_workers = 8
@@ -43,7 +44,7 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 writer = SummaryWriter(os.path.join(summary_name, time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time()))))
 
 # Prepare dataset & dataloader
-train_loader, val_loader = getDataloader(dataset, args)
+val_loader = getValloader(dataset, args)
 
 model_cnn = gcrHCN().to(device)
 model = PN(model_cnn,lstm_input_size=args.feature_dim,train_way=args.train_way,test_way=args.test_way,\
@@ -64,22 +65,12 @@ optimizer = torch.optim.SGD(policies, momentum=0.9)
 
 lr_scheduler = torch.optim.lr_scheduler.MultiStepLR(optimizer, milestones=[30,60], gamma=0.1)
 
-# Start training
-print("Training Started".center(60, '#'))
-for epoch in range(start_epoch, epochs):
-    # Train the model
-    train_mn_pn(model,criterion,optimizer,train_loader,device,epoch,log_interval,writer,args)
+# Start Evaluation
+print("Evaluation Started".center(60, '#'))
+for epoch in range(start_epoch, start_epoch+1):
     # Eval the model
-    acc,_ = eval_mn_pn(model,criterion,val_loader,device,epoch,log_interval,writer,args)
-    # Save model
-    # remember best acc and save checkpoint
-    is_best = acc>best_acc
-    best_acc = max(acc, best_acc)
-    save_checkpoint({
-        'epoch': epoch + 1,
-        'state_dict': model.state_dict(),
-        'best': best_acc
-    }, is_best, model_path, store_name)
-    print("Epoch {} Model Saved".format(epoch+1).center(60, '#'))
+    acc, statistic = eval_mn_pn(model,criterion,val_loader,device,epoch,log_interval,writer,args)
+    mean, std = account_mean_and_std(statistic)
+    print('Batch acc on isl: {:.3f}+-{:.3f}'.format(mean,std))
 
-print("Training Finished".center(60, '#'))
+print("Evaluation Finished".center(60, '#'))

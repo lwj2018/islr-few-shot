@@ -29,3 +29,8 @@ def euclidean_metric(a, b):
     b = b.unsqueeze(0).expand(n, m, -1)
     logits = -((a - b)**2).sum(dim=2)
     return logits
+
+def account_mean_and_std(statistic):
+    mean = numpy.mean(statistic)
+    std = numpy.std(statistic)
+    return mean,std

@@ -1,5 +1,6 @@
 import torch
 import torch.nn.functional as F
+import numpy
 import time
 from utils.metricUtils import *
 from utils.Averager import AverageMeter
@@ -67,6 +68,7 @@ def eval_gcr_relation(model, criterion,
     avg_acc1 = AverageMeter()
     avg_acc2 = AverageMeter()
     avg_acc3 = AverageMeter()
+    statistic = []
     # Create recorder
     averagers = [avg_loss1, avg_loss2, avg_loss3, avg_acc1, avg_acc2, avg_acc3]
     names = ['val loss1','val loss2','val loss3', 'val acc1','val acc2','val acc3']
@@ -106,14 +108,15 @@ def eval_gcr_relation(model, criterion,
         recoder.tik()
         recoder.data_tik()
 
-        # update average value
+        # update average value & account statistic
         vals = [loss1.item(),loss2.item(),loss3.item(),acc1,acc2,acc3]
         recoder.update(vals)
+        statistic.append(acc.data.cpu().numpy())
 
         if i % log_interval == log_interval-1:
             recoder.log(epoch,i,len(valloader),mode='Eval')
 
-    return recoder.get_avg('val acc1')
+    return recoder.get_avg('val acc1'), numpy.array(statistic)
 
 def test_gcr(model, criterion,
           valloader, device, epoch, 
@@ -170,6 +173,7 @@ def eval_mn_pn(model, criterion,
     data_time = AverageMeter()
     avg_loss = AverageMeter()
     avg_acc = AverageMeter()
+    statistic = []
     # Create recorder
     averagers = [avg_loss,avg_acc]
     names = ['val loss','val acc']
@@ -192,8 +196,11 @@ def eval_mn_pn(model, criterion,
         data_query = data[p:]
 
         y_pred, label = model(data_shot,data_query,mode='eval')
+        # print('lab: {}'.format(lab.view((args.shot+args.query_val),args.test_way)[0]))
         # compute the loss
         loss = criterion(y_pred, label)
+        # print('y_pred: {}'.format(y_pred.argmax(-1)))
+        # print('label: {}'.format(label))
 
         # compute the metrics
         acc = accuracy(y_pred, label)[0]
@@ -203,11 +210,12 @@ def eval_mn_pn(model, criterion,
         recoder.tik()
         recoder.data_tik()
 
-        # update average value
+        # update average value & account statistic
         vals = [loss.item(),acc]
         recoder.update(vals)
+        statistic.append(acc.data.cpu().numpy())
 
         if i % log_interval == log_interval-1:
             recoder.log(epoch,i,len(valloader),mode='Eval')
 
-    return recoder.get_avg('val acc')
+    return recoder.get_avg('val acc'), numpy.array(statistic)

@@ -167,11 +167,11 @@ def train_mn_pn(model, criterion,
         data_query = data[p:]
 
         y_pred, label = model(data_shot,data_query)
-        print('lab: {}'.format(lab.view((args.shot+args.query),args.train_way)[0]))
+        # print('lab: {}'.format(lab.view((args.shot+args.query),args.train_way)[0]))
         # compute the loss
         loss = criterion(y_pred, label)
-        print('y_pred: {}'.format(y_pred))
-        print('label: {}'.format(label))
+        # print('y_pred: {}'.format(y_pred))
+        # print('label: {}'.format(label))
 
         # backward & optimize
         optimizer.zero_grad()

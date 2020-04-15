@@ -85,7 +85,7 @@ for epoch in range(start_epoch, epochs):
     # Train the model
     train_gcr_relation(model,criterion,optimizer,optimizer_cnn,train_loader,device,epoch,log_interval,writer,args)
     # Eval the model
-    acc = eval_gcr_relation(model,criterion,val_loader,device,epoch,log_interval,writer,args)
+    acc,_ = eval_gcr_relation(model,criterion,val_loader,device,epoch,log_interval,writer,args)
     # Save model
     # remember best acc and save checkpoint
     is_best = acc>best_acc
