@@ -10,6 +10,7 @@ class CategoriesSampler_train():
         self.n_query = n_query
         self.n_base_class = n_base_class
         self.n_reserve = 40
+        self.n_try = 30
 
         label_set = list(set(label))
         self.label_set = label_set

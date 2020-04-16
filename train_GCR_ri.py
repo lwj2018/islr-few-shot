@@ -28,7 +28,7 @@ cnn_ckpt = None#'/home/liweijie/projects/few-shot/checkpoint/20200329/CNN_best.p
 global_ckpt = '/home/liweijie/projects/islr-few-shot/checkpoint/20200412_global_proto_best.pth.tar'
 cnngen_ckpt = '/home/liweijie/projects/islr-few-shot/checkpoint/20200412_HCN_GEN_best.pth.tar'
 gcrr_ckpt = None#'/home/liweijie/projects/few-shot/checkpoint/20200403_miniImage_GCR_r_checkpoint.pth.tar'
-checkpoint = '/home/liweijie/projects/islr-few-shot/checkpoint/20200412_isl_GCR_ri_5shot_best.pth.tar'
+checkpoint = '/home/liweijie/projects/islr-few-shot/checkpoint/20200416_isl_GCR_ri_5shot_checkpoint.pth.tar'
 log_interval = 20
 device_list = '0'
 model_path = "./checkpoint"
@@ -79,6 +79,7 @@ lr_scheduler = torch.optim.lr_scheduler.MultiStepLR(optimizer, milestones=[30,60
 lr_scheduler_cnn = torch.optim.lr_scheduler.MultiStepLR(optimizer_cnn, milestones=[30,60], gamma=0.1)
 
 # Start training
+best_acc = 0.0
 print("Train with global proto integrated, Save integrated model")
 print("Training Started".center(60, '#'))
 for epoch in range(start_epoch, epochs):
@@ -97,5 +98,6 @@ for epoch in range(start_epoch, epochs):
         'global_proto': torch.cat([model.global_base,model.global_novel])
     }, is_best, model_path, store_name)
     print("Epoch {} Model Saved".format(epoch+1).center(60, '#'))
+    print('Epoch best acc: {:.3f}'.format(best_acc))
 
 print("Training Finished".center(60, '#'))

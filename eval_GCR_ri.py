@@ -57,7 +57,7 @@ criterion = loss_for_gcr_relation()
 
 # Start Evaluation
 print("Evaluation Started".center(60, '#'))
-for epoch in range(start_epoch, epochs):
+for epoch in range(start_epoch, start_epoch+1):
     # Eval the model
     acc,_ = eval_gcr_relation(model,criterion,val_loader,device,epoch,log_interval,writer,args)
     print('Batch acc on isl: {:.3f}'.format(acc))

@@ -5,7 +5,7 @@ class Arguments:
         if shot == 5:
             self.shot = 5
             self.query = 5
-            self.query_val = 15
+            self.query_val = 5
         # Settings for 1-shot
         elif shot == 1:
             self.shot = 1

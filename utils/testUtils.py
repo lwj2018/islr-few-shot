@@ -111,12 +111,12 @@ def eval_gcr_relation(model, criterion,
         # update average value & account statistic
         vals = [loss1.item(),loss2.item(),loss3.item(),acc1,acc2,acc3]
         recoder.update(vals)
-        statistic.append(acc.data.cpu().numpy())
+        statistic.append(acc1.data.cpu().numpy())
 
         if i % log_interval == log_interval-1:
             recoder.log(epoch,i,len(valloader),mode='Eval')
 
-    return recoder.get_avg('val acc1'), numpy.array(statistic)
+    return recoder.get_avg('val acc3'), numpy.array(statistic)
 
 def test_gcr(model, criterion,
           valloader, device, epoch, 
@@ -145,6 +145,8 @@ def test_gcr(model, criterion,
         proto = model.baseModel(data)
         global_set = torch.cat([model.global_base,model.global_novel])
         logits = relation(proto,global_set)
+        # print('logits: ',logits.argmax(-1))
+        # print('lab: ',lab)
         
         # compute the loss
         loss = criterion(logits, lab)

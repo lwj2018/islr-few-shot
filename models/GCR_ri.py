@@ -78,8 +78,8 @@ class GCR_ri(nn.Module):
         label = label.type(torch.cuda.LongTensor)
 
         gt3 = gt.repeat(query)
-        logits3 = self.relation1(proto.reshape(self.shot*way,-1),torch.cat([self.global_base,self.global_novel]))
-        # logits3 = self.relation1(q_proto.reshape(query*way,-1),torch.cat([self.global_base,self.global_novel]))
+        # logits3 = self.relation1(proto.reshape(self.shot*way,-1),torch.cat([self.global_base,self.global_novel]))
+        logits3 = self.relation1(q_proto.reshape(query*way,-1),torch.cat([self.global_base,self.global_novel]))
 
         return logits, label, logits2, gt, logits3, gt3
 

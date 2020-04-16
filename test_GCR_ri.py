@@ -23,9 +23,9 @@ learning_rate = 1e-3
 # Options
 shot = 5
 dataset = 'isl'
-store_name = 'test' + dataset + '_GCR_ri' + '_%dshot'%(shot)
+store_name = 'test_' + dataset + '_GCR_ri' + '_%dshot'%(shot)
 summary_name = 'runs/' + store_name
-checkpoint = '/home/liweijie/projects/islr-few-shot/checkpoint/isl_GCR_ri_5shot_best.pth.tar'#5-shot
+checkpoint = '/home/liweijie/projects/islr-few-shot/checkpoint/isl_GCR_ri_5shot_checkpoint.pth.tar'#5-shot
 # checkpoint = '/home/liweijie/projects/few-shot/checkpoint/20200404_miniImage_GCR_r_1shot_best.pth.tar'#1-shot
 log_interval = 20
 device_list = '1'
@@ -69,11 +69,11 @@ criterion = nn.CrossEntropyLoss()
 # Start Test
 print("Test Started".center(60, '#'))
 for epoch in range(start_epoch, start_epoch+1):
+    acc = test_gcr(model,criterion,val_loader3,device,epoch,log_interval,writer,args,model.relation1)
+    print('Batch accu_n on isl: {:.3f}'.format(acc))
     acc = test_gcr(model,criterion,val_loader,device,epoch,log_interval,writer,args,model.relation1)
     print('Batch accu_a on isl: {:.3f}'.format(acc))
     acc = test_gcr(model,criterion,val_loader2,device,epoch,log_interval,writer,args,model.relation1)
     print('Batch accu_b on isl: {:.3f}'.format(acc))
-    acc = test_gcr(model,criterion,val_loader3,device,epoch,log_interval,writer,args,model.relation1)
-    print('Batch accu_n on isl: {:.3f}'.format(acc))
 
 print("Test Finished".center(60, '#'))
