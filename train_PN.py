@@ -19,14 +19,14 @@ from Arguments import Arguments
 epochs = 100
 learning_rate = 1e-5
 # Options
-shot = 5
+shot = 1
 dataset = 'isl'
 store_name = dataset + '_PN' + '_%dshot'%(shot)
 summary_name = 'runs/' + store_name
 cnn_ckpt = '/home/liweijie/projects/islr-few-shot/checkpoint/20200412_HCN_best.pth.tar'
-checkpoint = None#'/home/liweijie/projects/few-shot/checkpoint/miniImage_PN_checkpoint.pth.tar'
+checkpoint = '/home/liweijie/projects/islr-few-shot/checkpoint/isl_PN_5shot_best.pth.tar'
 log_interval = 20
-device_list = '1'
+device_list = '0'
 num_workers = 8
 model_path = "./checkpoint"
 
@@ -65,6 +65,7 @@ optimizer = torch.optim.SGD(policies, momentum=0.9)
 lr_scheduler = torch.optim.lr_scheduler.MultiStepLR(optimizer, milestones=[30,60], gamma=0.1)
 
 # Start training
+best_acc = 0.0
 print("Training Started".center(60, '#'))
 for epoch in range(start_epoch, epochs):
     # Train the model

@@ -105,10 +105,11 @@ class CSL_Isolated_Openpose(data.Dataset):
         return mat
 
     def augmentation(self,mat):
-        amp = 0.05
+        amp = 0.02
         d0,d1,d2 = mat.shape
         jitter = (np.random.rand(d0,d1,d2)-0.5)*amp*2
         mat = mat + jitter
+        mat = mat.astype(np.float32)
         return mat
 
 def min(array):

@@ -25,9 +25,9 @@ dataset = 'isl'
 store_name = dataset + '_PN' + '_%dshot'%(shot)
 summary_name = 'runs/' + store_name
 cnn_ckpt = '/home/liweijie/projects/islr-few-shot/checkpoint/20200412_HCN_best.pth.tar'
-checkpoint = '/home/liweijie/projects/islr-few-shot/checkpoint/20200415_isl_PN_5shot_best.pth.tar'
+checkpoint = '/home/liweijie/projects/islr-few-shot/checkpoint/isl_PN_5shot_best.pth.tar'
 log_interval = 20
-device_list = '1'
+device_list = '0'
 num_workers = 8
 model_path = "./checkpoint"
 
@@ -59,18 +59,12 @@ if checkpoint is not None:
 # Create loss criterion & optimizer
 criterion = nn.CrossEntropyLoss()
 
-policies = model.get_optim_policies(learning_rate)
-# optimizer = torch.optim.SGD(policies, momentum=0.9)
-optimizer = torch.optim.SGD(policies, momentum=0.9)
-
-lr_scheduler = torch.optim.lr_scheduler.MultiStepLR(optimizer, milestones=[30,60], gamma=0.1)
-
 # Start Evaluation
 print("Evaluation Started".center(60, '#'))
 for epoch in range(start_epoch, start_epoch+1):
     # Eval the model
     acc, statistic = eval_mn_pn(model,criterion,val_loader,device,epoch,log_interval,writer,args)
     mean, std = account_mean_and_std(statistic)
-    print('Batch acc on isl: {:.3f}+-{:.3f}'.format(mean,std))
+    print('Batch acc on isl: {:.3f}'.format(acc))
 
 print("Evaluation Finished".center(60, '#'))

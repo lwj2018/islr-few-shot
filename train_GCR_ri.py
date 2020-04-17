@@ -17,8 +17,8 @@ from utils.dataUtils import getDataloader
 from Arguments import Arguments
 
 # Hyper params 
-epochs = 2000
-learning_rate = 1e-4
+epochs = 10
+learning_rate = 1e-5
 # Options
 shot = 5
 dataset = 'isl'
@@ -28,7 +28,7 @@ cnn_ckpt = None#'/home/liweijie/projects/few-shot/checkpoint/20200329/CNN_best.p
 global_ckpt = '/home/liweijie/projects/islr-few-shot/checkpoint/20200412_global_proto_best.pth.tar'
 cnngen_ckpt = '/home/liweijie/projects/islr-few-shot/checkpoint/20200412_HCN_GEN_best.pth.tar'
 gcrr_ckpt = None#'/home/liweijie/projects/few-shot/checkpoint/20200403_miniImage_GCR_r_checkpoint.pth.tar'
-checkpoint = '/home/liweijie/projects/islr-few-shot/checkpoint/20200416_isl_GCR_ri_5shot_checkpoint.pth.tar'
+checkpoint = '/home/liweijie/projects/islr-few-shot/checkpoint/20200416_13.80_isl_GCR_ri_5shot_best.pth.tar'
 log_interval = 20
 device_list = '0'
 model_path = "./checkpoint"
@@ -72,8 +72,9 @@ criterion = loss_for_gcr_relation()
 
 policies = model.get_optim_policies(learning_rate)
 optimizer = torch.optim.SGD(policies, momentum=0.9)
-# optimizer = torch.optim.Adam(policies)
 optimizer_cnn = torch.optim.SGD(model.baseModel.parameters(), lr=learning_rate,momentum=0.9)
+# optimizer = torch.optim.Adam(policies)
+# optimizer_cnn = torch.optim.Adam(model.baseModel.parameters())
 
 lr_scheduler = torch.optim.lr_scheduler.MultiStepLR(optimizer, milestones=[30,60], gamma=0.1)
 lr_scheduler_cnn = torch.optim.lr_scheduler.MultiStepLR(optimizer_cnn, milestones=[30,60], gamma=0.1)
@@ -82,7 +83,7 @@ lr_scheduler_cnn = torch.optim.lr_scheduler.MultiStepLR(optimizer_cnn, milestone
 best_acc = 0.0
 print("Train with global proto integrated, Save integrated model")
 print("Training Started".center(60, '#'))
-for epoch in range(start_epoch, epochs):
+for epoch in range(start_epoch, start_epoch + epochs):
     # Train the model
     train_gcr_relation(model,criterion,optimizer,optimizer_cnn,train_loader,device,epoch,log_interval,writer,args)
     # Eval the model

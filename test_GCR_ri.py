@@ -25,10 +25,10 @@ shot = 5
 dataset = 'isl'
 store_name = 'test_' + dataset + '_GCR_ri' + '_%dshot'%(shot)
 summary_name = 'runs/' + store_name
-checkpoint = '/home/liweijie/projects/islr-few-shot/checkpoint/isl_GCR_ri_5shot_checkpoint.pth.tar'#5-shot
+checkpoint = '/home/liweijie/projects/islr-few-shot/checkpoint/20200417_isl_GCR_ri_5shot_best.pth.tar'#5-shot
 # checkpoint = '/home/liweijie/projects/few-shot/checkpoint/20200404_miniImage_GCR_r_1shot_best.pth.tar'#1-shot
 log_interval = 20
-device_list = '1'
+device_list = '3'
 num_workers = 8
 model_path = "./checkpoint"
 

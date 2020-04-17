@@ -71,13 +71,6 @@ class CSL_Isolated_Openpose2(data.Dataset):
     def get_sample_indices(self,num_frames):
         # ignore the first frame
         indices = np.linspace(0,num_frames-1,self.length).astype(int)
-        interval = (num_frames-1)//self.length
-        if interval>0:
-            jitter = np.random.randint(0,interval,self.length)
-        else:
-            jitter = 0
-        jitter = (np.random.rand(self.length)*interval).astype(int)
-        indices = np.sort(indices+jitter)
         indices = np.clip(indices,0,num_frames-1)
         return indices
     

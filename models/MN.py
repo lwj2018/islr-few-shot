@@ -32,10 +32,6 @@ class MN(nn.Module):
             way = self.test_way
             query = self.query_val
         # Concatenate
-        support = support.reshape(self.shot,way,-1)
-        support = support.permute(1,0,2).reshape(way * self.shot,-1)
-        queries = queries.reshape(query,way,-1)
-        queries = queries.permute(1,0,2).reshape(way * query,-1)
         x = torch.cat([support,queries],0)
         # Embed all samples
         embeddings = self.baseModel(x)
@@ -45,6 +41,10 @@ class MN(nn.Module):
         # k lots of q query samples from those classes
         support = embeddings[:self.shot * way]
         queries = embeddings[self.shot * way:]
+        support = support.reshape(self.shot,way,-1)
+        support = support.permute(1,0,2).reshape(way * self.shot,-1)
+        queries = queries.reshape(query,way,-1)
+        queries = queries.permute(1,0,2).reshape(way * query,-1)
 
         # LSTM requires input of shape (seq_len, batch, input_size). `support` is of
         # shape (k_way * n_shot, embedding_dim) and we want the LSTM to treat the
@@ -67,12 +67,13 @@ class MN(nn.Module):
         distances = euclidean_metric(queries, support)
 
         # Calculate "attention" as softmax over support-query distances
-        attention = (distances)#.softmax(dim=1)
+        distances = F.normalize(distances,1,dim=1)
+        attention = (distances).softmax(dim=1)
 
         # Calculate predictions as in equation (1) from Matching Networks
         # y_hat = \sum_{i=1}^{k} a(x_hat, x_i) y_i
         y_pred = matching_net_predictions(attention, self.shot, way, query)
-        # y_pred = y_pred.log()
+        y_pred = y_pred.log()
         label = create_nshot_task_label_t(way,query).cuda()
         return y_pred, label
 
