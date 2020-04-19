@@ -8,7 +8,7 @@ from utils.critUtils import convert_to_onehot
 class GCR_ri(nn.Module):
     def __init__(self,baseModel,genModel,global_base=None,global_novel=None,
                 train_way=20,test_way=5,
-                shot=5,query=5,query_val=15,f_dim=1600,
+                shot=5,query=5,query_val=15,f_dim=1024,
                 z_dim=512):
         super(GCR_ri,self).__init__()
         self.train_way = train_way

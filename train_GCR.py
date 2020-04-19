@@ -5,30 +5,29 @@ import torch
 import torch.nn.functional as F
 from torch.utils.data import DataLoader
 
-from models.GCR_ri import GCR_ri
+from models.GCR import GCR
 from models.gcrHCN import gcrHCN
 from models.Hallucinator import Hallucinator
 from utils.ioUtils import *
-from utils.critUtils import loss_for_gcr, loss_for_gcr_relation
-from utils.trainUtils import train_gcr_relation
-from utils.testUtils import eval_gcr_relation
+from utils.critUtils import loss_for_gcr
+from utils.trainUtils import train_gcr
+from utils.testUtils import eval_gcr
 from torch.utils.tensorboard import SummaryWriter
 from utils.dataUtils import getDataloader
 from Arguments import Arguments
 
 # Hyper params 
-epochs = 100
-learning_rate = 1e-5
+epochs = 50
+learning_rate = 1e-6#default 1e-5
 # Options
-shot = 5
+shot = 1
 dataset = 'isl'
-store_name = dataset + '_GCR_ri' + '_%dshot'%(shot)
+store_name = dataset + '_GCR' + '_%dshot'%(shot)
 summary_name = 'runs/' + store_name
-cnn_ckpt = None#'/home/liweijie/projects/few-shot/checkpoint/20200329/CNN_best.pth.tar'
+cnn_ckpt = '/home/liweijie/projects/islr-few-shot/checkpoint/20200412_HCN_best.pth.tar'
 global_ckpt = '/home/liweijie/projects/islr-few-shot/checkpoint/20200412_global_proto_best.pth.tar'
-cnngen_ckpt = '/home/liweijie/projects/islr-few-shot/checkpoint/20200412_HCN_GEN_best.pth.tar'
-gcrr_ckpt = None#'/home/liweijie/projects/few-shot/checkpoint/20200403_miniImage_GCR_r_checkpoint.pth.tar'
-checkpoint = '/home/liweijie/projects/islr-few-shot/checkpoint/20200416_13.80_isl_GCR_ri_5shot_best.pth.tar'
+cnngen_ckpt = None#'/home/liweijie/projects/islr-few-shot/checkpoint/20200412_HCN_GEN_best.pth.tar'
+checkpoint = '/home/liweijie/projects/islr-few-shot/checkpoint/isl_GCR_5shot_best.pth.tar'
 log_interval = 20
 device_list = '0'
 model_path = "./checkpoint"
@@ -49,8 +48,7 @@ writer = SummaryWriter(os.path.join(summary_name, time.strftime('%Y-%m-%d %H:%M:
 train_loader, val_loader = getDataloader(dataset,args)
 
 model_cnn = gcrHCN().to(device)
-model_gen = Hallucinator(args.feature_dim).to(device)
-model = GCR_ri(model_cnn,model_gen,train_way=args.train_way,\
+model = GCR(model_cnn,train_way=args.train_way,\
     test_way=args.test_way, shot=args.shot,query=args.query,query_val=args.query_val,f_dim=args.feature_dim).to(device)
 # Resume model
 if cnn_ckpt is not None:
@@ -58,17 +56,15 @@ if cnn_ckpt is not None:
 if cnngen_ckpt is not None:
     resume_cnn_from_cnn_gen(model_cnn,cnngen_ckpt)
     resume_gen_from_cnn_gen(model_gen,cnngen_ckpt)
-if gcrr_ckpt is not None:
-    resume_gcr_part(model, gcrr_ckpt, args.n_base)
 if checkpoint is not None:
     start_epoch, best_acc = resume_gcr_model(model, checkpoint, args.n_base)
 global_base, global_novel = load_global_proto(global_ckpt,args)
 
-# model = GCR_ri(model_cnn,model_gen,global_base=global_base,global_novel=global_novel,train_way=args.train_way,\
+# model = GCR(model_cnn,global_base=global_base,global_novel=global_novel,train_way=args.train_way,\
 #     test_way=args.test_way, shot=args.shot,query=args.query,query_val=args.query_val,f_dim=args.feature_dim).to(device)
 
 # Create loss criterion & optimizer
-criterion = loss_for_gcr_relation()
+criterion = loss_for_gcr()
 
 policies = model.get_optim_policies(learning_rate)
 optimizer = torch.optim.SGD(policies, momentum=0.9)
@@ -85,9 +81,9 @@ print("Train with global proto integrated, Save integrated model")
 print("Training Started".center(60, '#'))
 for epoch in range(start_epoch, start_epoch + epochs):
     # Train the model
-    train_gcr_relation(model,criterion,optimizer,optimizer_cnn,train_loader,device,epoch,log_interval,writer,args)
+    train_gcr(model,criterion,optimizer,optimizer_cnn,train_loader,device,epoch,log_interval,writer,args)
     # Eval the model
-    acc,_ = eval_gcr_relation(model,criterion,val_loader,device,epoch,log_interval,writer,args)
+    acc,_ = eval_gcr(model,criterion,val_loader,device,epoch,log_interval,writer,args)
     # Save model
     # remember best acc and save checkpoint
     is_best = acc>best_acc

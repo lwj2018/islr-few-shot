@@ -7,7 +7,8 @@ from utils.metricUtils import euclidean_metric
 class GCR(nn.Module):
     def __init__(self,baseModel,global_base=None,global_novel=None,
                 train_way=20,test_way=5,
-                shot=5,query=5,query_val=15):
+                shot=5,query=5,query_val=15,f_dim=1024,
+                z_dim=512):
         super(GCR,self).__init__()
         self.train_way = train_way
         self.test_way = test_way
@@ -16,7 +17,7 @@ class GCR(nn.Module):
         self.query_val = query_val
 
         self.baseModel = baseModel
-        self.registrator = Registrator()
+        self.registrator = Registrator(f_dim,z_dim)
         self.global_base = global_base
         self.global_novel = global_novel
 

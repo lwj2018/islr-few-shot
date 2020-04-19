@@ -16,8 +16,8 @@ from utils.dataUtils import getDataloader
 from Arguments import Arguments
 
 # Hyper params 
-epochs = 100
-learning_rate = 1e-5
+epochs = 5
+learning_rate = 1e-4
 # Options
 shot = 1
 dataset = 'isl'
@@ -65,9 +65,9 @@ optimizer = torch.optim.SGD(policies, momentum=0.9)
 lr_scheduler = torch.optim.lr_scheduler.MultiStepLR(optimizer, milestones=[30,60], gamma=0.1)
 
 # Start training
-best_acc = 0.0
+best_acc = 90.0
 print("Training Started".center(60, '#'))
-for epoch in range(start_epoch, epochs):
+for epoch in range(start_epoch, start_epoch + epochs):
     # Train the model
     train_mn_pn(model,criterion,optimizer,train_loader,device,epoch,log_interval,writer,args)
     # Eval the model

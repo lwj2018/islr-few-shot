@@ -19,12 +19,12 @@ from Arguments import Arguments
 epochs = 5
 learning_rate = 1e-4
 # Options
-shot = 5
+shot = 1
 dataset = 'isl'
 store_name = dataset + '_MN' + '_%dshot'%(shot)
 summary_name = 'runs/' + store_name
 cnn_ckpt = '/home/liweijie/projects/islr-few-shot/checkpoint/20200412_HCN_best.pth.tar'
-checkpoint = None#'/home/liweijie/projects/islr-few-shot/checkpoint/isl_MN_5shot_best.pth.tar'
+checkpoint = '/home/liweijie/projects/islr-few-shot/checkpoint/isl_MN_5shot_best.pth.tar'
 log_interval = 20
 device_list = '0'
 num_workers = 8

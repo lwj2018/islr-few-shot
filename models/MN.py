@@ -8,7 +8,7 @@ from utils.fewshotUtils import create_nshot_task_label_t
 class MN(nn.Module):
     def __init__(self,baseModel,
                 lstm_layers=1,
-                lstm_input_size=1600,
+                lstm_input_size=1024,
                 unrolling_steps=2,
                 train_way=20,test_way=5,
                 shot=5,query=5,query_val=15,

@@ -73,8 +73,8 @@ class GCR_relation(nn.Module):
         # shape of the dist_metric is: way x total_class
         logits2 = self.relation2(proto_new, global_new)
 
-        similarity = F.normalize(logits2,1,-1)
-        # similarity = logits2
+        # similarity = F.normalize(logits2,1,-1)
+        similarity = logits2
         feature = torch.matmul(similarity, torch.cat([self.global_base,self.global_novel]))
         # shape of data_query is: (query x way) x ...
         # shape of feature is: way x f_dim(1600)
@@ -120,9 +120,9 @@ class Registrator(nn.Module):
 class Relation1(nn.Module):
     def __init__(self,h_dim):
         super(Relation1, self).__init__()
-        self.fc1 = nn.Linear(h_dim,1024)
-        self.fc2 = nn.Linear(1024,128)
-        self.fc3 = nn.Linear(128,1)
+        self.fc1 = nn.Linear(h_dim,1600)
+        self.fc2 = nn.Linear(1600,200)
+        self.fc3 = nn.Linear(200,1)
 
     def forward(self,x1,x2):
         n = x1.shape[0]
@@ -132,7 +132,8 @@ class Relation1(nn.Module):
         x = torch.cat([x1,x2],2)
         x = F.relu(self.fc1(x))
         x = F.relu(self.fc2(x))
-        x = F.sigmoid(self.fc3(x))
+        x = self.fc3(x)
+        # x = F.sigmoid(x)
         x = x.squeeze(-1)
         return x
 
