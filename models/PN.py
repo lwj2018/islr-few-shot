@@ -54,6 +54,9 @@ class PN(nn.Module):
         distances = euclidean_metric(queries,support)
         return distances
 
+    def get_feature(self, x):
+        return self.baseModel(x)
+
     def get_optim_policies(self, lr):
         return [
             {'params':self.parameters(),'lr':lr},

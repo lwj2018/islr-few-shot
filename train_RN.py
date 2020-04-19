@@ -16,7 +16,7 @@ from utils.dataUtils import getDataloader
 from Arguments import Arguments
 
 # Hyper params 
-epochs = 100
+epochs = 1000
 learning_rate = 1e-5
 # Options
 shot = 5

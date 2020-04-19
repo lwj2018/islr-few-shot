@@ -29,7 +29,7 @@ store_name = 'HCN'
 gproto_name = 'global_proto'
 checkpoint = '/home/liweijie/projects/SLR/checkpoint/20200315_82.106_HCN_isolated_best.pth.tar'
 log_interval = 100
-device_list = '1'
+device_list = '0'
 num_workers = 8
 model_path = "./checkpoint"
 
@@ -50,7 +50,7 @@ writer = SummaryWriter(os.path.join('runs/cnn', time.strftime('%Y-%m-%d %H:%M:%S
 trainset = CSL_Isolated_Openpose('trainvaltest')
 train_sampler = PretrainSampler(trainset.label, args.shot, args.n_base, batch_size)
 train_loader = DataLoader(dataset=trainset, batch_sampler=train_sampler,
-                        num_workers=num_workers, pin_memory=True, shuffle=True)
+                        num_workers=num_workers, pin_memory=True)
 print('Total size of the train set: %d'%(len(train_loader)))
 valset = CSL_Isolated_Openpose('trainvaltest')
 val_sampler = PretrainSampler(valset.label, args.shot, args.n_base, batch_size)
