@@ -77,6 +77,16 @@ class MN(nn.Module):
         label = create_nshot_task_label_t(way,query).cuda()
         return y_pred, label
 
+    def gfsl_test(self,support,queries):
+        queries = self.baseModel(queries)
+        support, _, _ = self.g(support.unsqueeze(1))
+        support = support.squeeze(1)
+        queries = self.f(support, queries)
+        distances = euclidean_metric(queries, support)
+        distances = F.normalize(distances,1,dim=1)
+        attention = (distances).softmax(dim=1)
+        return attention
+
     def get_optim_policies(self, lr):
         return [
             {'params':self.parameters(),'lr':lr},

@@ -334,3 +334,49 @@ def eval_rn(model, criterion,
 
     return recoder.get_avg('val acc'), numpy.array(statistic)
 
+def test_mn(model, global_proto, criterion,
+          valloader, device, epoch, 
+          log_interval, writer, args):
+    batch_time = AverageMeter()
+    data_time = AverageMeter()
+    avg_loss = AverageMeter()
+    avg_acc = AverageMeter()
+    statistic = []
+    # Create recorder
+    averagers = [avg_loss,avg_acc]
+    names = ['val loss','val acc']
+    recoder = Recorder(averagers,names,writer,batch_time,data_time)
+    # Set evaluation mode
+    model.eval()
+
+    recoder.tik()
+    recoder.data_tik()
+    for i, batch in enumerate(valloader):
+        # measure data loading time
+        recoder.data_tok()
+
+        # get the inputs and labels
+        data, lab = [_.to(device) for _ in batch]
+
+        # forward
+        y_pred = model.gfsl_test(global_proto,data)
+        # compute the loss
+        loss = criterion(y_pred, lab)
+
+        # compute the metrics
+        acc = accuracy(y_pred, lab)[0]
+
+        # measure elapsed time
+        recoder.tok()
+        recoder.tik()
+        recoder.data_tik()
+
+        # update average value & account statistic
+        vals = [loss.item(),acc]
+        recoder.update(vals)
+
+        if i % log_interval == log_interval-1:
+            recoder.log(epoch,i,len(valloader),mode='Test')
+
+    return recoder.get_avg('val acc')
+

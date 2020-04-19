@@ -49,6 +49,11 @@ class PN(nn.Module):
         label = create_nshot_task_label(way,query).cuda()
         return y_pred, label
 
+    def gfsl_test(self, support, queries):
+        queries = self.baseModel(queries)
+        distances = euclidean_metric(queries,support)
+        return distances
+
     def get_optim_policies(self, lr):
         return [
             {'params':self.parameters(),'lr':lr},

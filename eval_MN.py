@@ -22,9 +22,8 @@ learning_rate = 1e-5
 # Options
 shot = 1
 dataset = 'isl'
-store_name = dataset + '_MN' + '_%dshot'%(shot)
+store_name = 'eval_' + dataset + '_MN' + '_%dshot'%(shot)
 summary_name = 'runs/' + store_name
-cnn_ckpt = '/home/liweijie/projects/islr-few-shot/checkpoint/20200412_HCN_best.pth.tar'
 checkpoint = '/home/liweijie/projects/islr-few-shot/checkpoint/isl_MN_1shot_best.pth.tar'
 log_interval = 20
 device_list = '0'
@@ -51,8 +50,6 @@ model = MN(model_cnn,lstm_input_size=args.feature_dim,train_way=args.train_way,t
     shot=args.shot,query=args.query,query_val=args.query_val).to(device)
 
 # Resume model
-if cnn_ckpt is not None:
-    resume_cnn_part(model_cnn,cnn_ckpt)
 if checkpoint is not None:
     start_epoch, best_acc = resume_model(model, checkpoint)
 

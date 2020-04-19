@@ -17,5 +17,6 @@ class Arguments:
         self.train_way = 20
         self.test_way = 5
         self.feature_dim = 1024
+        self.n_reserve = 40
         # Options
         self.num_workers = 8

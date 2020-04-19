@@ -50,7 +50,7 @@ writer = SummaryWriter(os.path.join('runs/cnn', time.strftime('%Y-%m-%d %H:%M:%S
 trainset = CSL_Isolated_Openpose('trainvaltest')
 train_sampler = PretrainSampler(trainset.label, args.shot, args.n_base, batch_size)
 train_loader = DataLoader(dataset=trainset, batch_sampler=train_sampler,
-                        num_workers=num_workers, pin_memory=True)
+                        num_workers=num_workers, pin_memory=True, shuffle=True)
 print('Total size of the train set: %d'%(len(train_loader)))
 valset = CSL_Isolated_Openpose('trainvaltest')
 val_sampler = PretrainSampler(valset.label, args.shot, args.n_base, batch_size)

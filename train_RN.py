@@ -16,8 +16,8 @@ from utils.dataUtils import getDataloader
 from Arguments import Arguments
 
 # Hyper params 
-epochs = 5
-learning_rate = 1e-4
+epochs = 100
+learning_rate = 1e-5
 # Options
 shot = 5
 dataset = 'isl'

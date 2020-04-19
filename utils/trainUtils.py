@@ -14,7 +14,7 @@ def train_cnn(model, criterion, optimizer, trainloader,
     data_time = AverageMeter()
     losses = AverageMeter()
     avg_acc = AverageMeter()
-    avg_proto = AverageMeter()
+    global_proto = numpy.zeros([args.num_class,args.feature_dim])
     # Create recorder
     averagers = [losses, avg_acc]
     names = ['train loss','train acc']
@@ -42,14 +42,12 @@ def train_cnn(model, criterion, optimizer, trainloader,
         loss.backward()
         optimizer.step()
 
-        # Calculate global proto
+        # Account global proto
         proto = model.get_feature(data)
-        episodic_proto = numpy.zeros([args.num_class,args.feature_dim])
         for idx,p in enumerate(proto):
             p = p.data.detach().cpu().numpy()
             c = lab[idx]
-            episodic_proto[c] += p
-        episodic_proto = episodic_proto/(args.shot+args.query)
+            global_proto[c] += p
         # compute the metrics
         acc = accuracy(outputs, lab)[0]
 
@@ -61,7 +59,6 @@ def train_cnn(model, criterion, optimizer, trainloader,
         # update average value
         vals = [loss.item(),acc]
         recoder.update(vals)
-        avg_proto.update(episodic_proto)
 
         # logging
         if i==0 or i % log_interval == log_interval-1:
@@ -69,7 +66,8 @@ def train_cnn(model, criterion, optimizer, trainloader,
             # Reset average meters 
             recoder.reset()        
 
-    global_proto = avg_proto.avg
+    global_proto[:args.n_base] = global_proto[:args.n_base] / args.n_reserve
+    global_proto[args.n_base:] = global_proto[args.n_base:] / args.shot
     return global_proto
 
 def train_gcr(model, criterion,

@@ -7,7 +7,7 @@ import torch.nn.functional as F
 from torch.utils.data import DataLoader
 
 from models.gcrHCN import gcrHCN
-from models.MN import MN
+from models.PN import PN
 from utils.ioUtils import *
 from utils.trainUtils import train_mn_pn
 from utils.testUtils import test_mn
@@ -27,9 +27,9 @@ batch_size = 8
 # Options
 shot = 5
 dataset = 'isl'
-store_name = 'test_' + dataset + '_MN' + '_%dshot'%(shot)
+store_name = 'test_' + dataset + '_PN' + '_%dshot'%(shot)
 summary_name = 'runs/' + store_name
-checkpoint = '/home/liweijie/projects/islr-few-shot/checkpoint/isl_MN_5shot_best.pth.tar'
+checkpoint = '/home/liweijie/projects/islr-few-shot/checkpoint/isl_PN_5shot_best.pth.tar'
 log_interval = 20
 device_list = '1'
 num_workers = 8
@@ -63,7 +63,7 @@ val_loader3 = DataLoader(dataset=valset3, batch_size = 8,
                         num_workers=8, pin_memory=True, shuffle=True)
 
 model_cnn = gcrHCN().to(device)
-model = MN(model_cnn,lstm_input_size=args.feature_dim,train_way=args.train_way,test_way=args.test_way,\
+model = PN(model_cnn,lstm_input_size=args.feature_dim,train_way=args.train_way,test_way=args.test_way,\
     shot=args.shot,query=args.query,query_val=args.query_val).to(device)
 
 # Resume model
