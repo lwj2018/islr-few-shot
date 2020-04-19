@@ -53,6 +53,7 @@ class gcrHCN(nn.Module):
 
     def forward(self,x):
         x = self.get_feature(x)
+        x = x.view(x.size(0),-1)
         return x
 
     def get_feature(self,input):
@@ -84,7 +85,7 @@ class gcrHCN(nn.Module):
         out = self.conv5(out)
         out = self.conv6(out)
         # out:  N J T(T/16) D
-        out = out.view(out.size(0),-1)
+        # Concretely, shape of out is: N x 256 x 2 x 2
         return out
 
 

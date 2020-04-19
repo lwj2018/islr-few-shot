@@ -43,12 +43,14 @@ class RN(nn.Module):
         prototypes = compute_prototypes(support, way, self.shot)
         # Calculate squared distances between all queries and all prototypes
         # Output should have shape (q_queries * k_way, k_way) = (num_queries, k_way)
-        distances = euclidean_metric(queries,prototypes)
+        distances = self.relation(queries,prototypes)
 
         # Calculate log p_{phi} (y = k | x)
-        y_pred = (distances).log_softmax(dim=1)
-        label = create_nshot_task_label(way,query).cuda()
-        return y_pred, label
+        y_pred = distances
+        y_onehot = torch.zeros(y_pred.size())
+        label = create_nshot_task_label(way,query).unsqueeze(-1).cuda()
+        y_onehot = y_onehot.scatter(1,label,1)
+        return y_pred, label, y_onehot
 
     def get_optim_policies(self, lr):
         return [
@@ -82,20 +84,25 @@ class conv_block(self):
         return x
 
 class Relation(self):
-    def __init__(self,in_dim,z_dim,h_dim=64):
+    def __init__(self,in_dim=256,h_dim=64,z_dim=64):
         self.conv1 = conv_block(in_dim)
         self.pool1 = nn.MaxPool2d(2,2)
         self.conv2 = conv_block(h_dim)
-        self.pool2 = nn.MaxPool2d(2,2)
         self.fc1 = nn.Linear(z_dim,8)
         self.fc2 = nn.Linear(8,1)
 
-    def forward(self,x):
+    def forward(self,x1,x2):
+        # Expand
+        n = x1.shape[0]
+        m = x2.shape[0]
+        x1 = x1.unsqueeze(1).expand(n,m,-1,-1,-1)
+        x2 = x2.unsqueeze(0).expand(n,m,-1,-1,-1)
+        x = torch.cat([x1,x2],2)
+        x = x.view( (-1,) + x.size()[-3:] )
         # Conv
         x = self.conv1(x)
         x = self.pool1(x)
         x = self.conv2(x)
-        x = self.pool2(x)
         # Flatten
         x = x.view(x.size(0),-1)
         # Fc
@@ -103,4 +110,6 @@ class Relation(self):
         x = F.relu(x)
         x = self.fc2(x)
         x = F.sigmoid(x)
+        # Reshape
+        x = x.view(n,m)
         return x

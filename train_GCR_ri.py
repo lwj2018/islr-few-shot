@@ -20,7 +20,7 @@ from Arguments import Arguments
 epochs = 100
 learning_rate = 1e-5
 # Options
-shot = 5
+shot = 1
 dataset = 'isl'
 store_name = dataset + '_GCR_ri' + '_%dshot'%(shot)
 summary_name = 'runs/' + store_name
