@@ -9,8 +9,8 @@ from torch.utils.data import DataLoader
 from models.gcrHCN import gcrHCN
 from models.RN import RN
 from utils.ioUtils import *
-from utils.trainUtils import train_mn_pn
-from utils.testUtils import eval_mn_pn
+from utils.trainUtils import train_rn
+from utils.testUtils import eval_rn
 from torch.utils.tensorboard import SummaryWriter
 from utils.dataUtils import getDataloader
 from Arguments import Arguments
@@ -19,7 +19,7 @@ from Arguments import Arguments
 epochs = 5
 learning_rate = 1e-4
 # Options
-shot = 1
+shot = 5
 dataset = 'isl'
 store_name = dataset + '_RN' + '_%dshot'%(shot)
 summary_name = 'runs/' + store_name
@@ -69,9 +69,9 @@ best_acc = 90.0
 print("Training Started".center(60, '#'))
 for epoch in range(start_epoch, start_epoch + epochs):
     # Train the model
-    train_mn_pn(model,criterion,optimizer,train_loader,device,epoch,log_interval,writer,args)
+    train_rn(model,criterion,optimizer,train_loader,device,epoch,log_interval,writer,args)
     # Eval the model
-    acc,_ = eval_mn_pn(model,criterion,val_loader,device,epoch,log_interval,writer,args)
+    acc,_ = eval_rn(model,criterion,val_loader,device,epoch,log_interval,writer,args)
     # Save model
     # remember best acc and save checkpoint
     is_best = acc>best_acc

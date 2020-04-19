@@ -33,7 +33,7 @@ class RN(nn.Module):
         # Concatenate
         x = torch.cat([support,queries],0)
         # Embed all samples
-        embeddings = self.baseModel(x)
+        embeddings = self.baseModel.get_feature(x)
 
         # Samples are ordered by the NShotWrapper class as follows:
         # k lots of n support samples from a particular class
@@ -47,9 +47,10 @@ class RN(nn.Module):
 
         # Calculate log p_{phi} (y = k | x)
         y_pred = distances
-        y_onehot = torch.zeros(y_pred.size())
+        y_onehot = torch.zeros(y_pred.size()).cuda()
         label = create_nshot_task_label(way,query).unsqueeze(-1).cuda()
         y_onehot = y_onehot.scatter(1,label,1)
+        y_onehot = y_onehot.float()
         return y_pred, label, y_onehot
 
     def get_optim_policies(self, lr):
@@ -69,11 +70,12 @@ def compute_prototypes(support: torch.Tensor, k: int, n: int) -> torch.Tensor:
     """
     # Reshape so the first dimension indexes by class then take the mean
     # along that dimension to generate the "prototypes" for each class
-    class_prototypes = support.reshape(n, k, -1).mean(dim=0)
+    class_prototypes = support.reshape( (n, k,) + support.size()[-3:] ).mean(dim=0)
     return class_prototypes
 
-class conv_block(self):
+class conv_block(nn.Module):
     def __init__(self,in_dim,h_dim=64):
+        super(conv_block,self).__init__()
         self.conv = nn.Conv2d(in_dim,h_dim,3,padding=1)
         self.bn = nn.BatchNorm2d(h_dim)
         
@@ -83,8 +85,9 @@ class conv_block(self):
         x = F.relu(x)
         return x
 
-class Relation(self):
-    def __init__(self,in_dim=256,h_dim=64,z_dim=64):
+class Relation(nn.Module):
+    def __init__(self,in_dim=2*256,h_dim=64,z_dim=64):
+        super(Relation,self).__init__()
         self.conv1 = conv_block(in_dim)
         self.pool1 = nn.MaxPool2d(2,2)
         self.conv2 = conv_block(h_dim)

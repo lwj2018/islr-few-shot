@@ -280,7 +280,7 @@ def eval_mn_pn(model, criterion,
 
     return recoder.get_avg('val acc'), numpy.array(statistic)
 
-def eval_mn_pn(model, criterion,
+def eval_rn(model, criterion,
           valloader, device, epoch, 
           log_interval, writer, args):
     batch_time = AverageMeter()

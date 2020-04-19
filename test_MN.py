@@ -2,31 +2,33 @@ import os.path as osp
 import time
 import numpy as np
 import torch
+import torch.nn as nn
 import torch.nn.functional as F
 from torch.utils.data import DataLoader
 
-from models.GCR_ri import GCR_ri
 from models.gcrHCN import gcrHCN
-from models.Hallucinator import Hallucinator
+from models.MN import MN
 from utils.ioUtils import *
-from utils.critUtils import loss_for_gcr, loss_for_gcr_relation
-from utils.trainUtils import train_gcr_relation
-from utils.testUtils import eval_gcr_relation
+from utils.trainUtils import train_mn_pn
+from utils.testUtils import eval_mn_pn
 from torch.utils.tensorboard import SummaryWriter
 from utils.dataUtils import getValloader
+from utils.metricUtils import account_mean_and_std
 from Arguments import Arguments
 
 # Hyper params 
-epochs = 2000
-learning_rate = 1e-3
+epochs = 100
+learning_rate = 1e-5
 # Options
 shot = 1
 dataset = 'isl'
-store_name = 'eval_' + dataset + '_GCR_ri' + '_%dshot'%(shot)
+store_name = dataset + '_MN' + '_%dshot'%(shot)
 summary_name = 'runs/' + store_name
-checkpoint = '/home/liweijie/projects/islr-few-shot/checkpoint/isl_GCR_ri_1shot_best.pth.tar'
+cnn_ckpt = '/home/liweijie/projects/islr-few-shot/checkpoint/20200412_HCN_best.pth.tar'
+checkpoint = '/home/liweijie/projects/islr-few-shot/checkpoint/isl_MN_1shot_best.pth.tar'
 log_interval = 20
 device_list = '0'
+num_workers = 8
 model_path = "./checkpoint"
 
 start_epoch = 0
@@ -42,24 +44,27 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 writer = SummaryWriter(os.path.join(summary_name, time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time()))))
 
 # Prepare dataset & dataloader
-val_loader = getValloader(dataset,args)
+val_loader = getValloader(dataset, args)
 
 model_cnn = gcrHCN().to(device)
-model_gen = Hallucinator(args.feature_dim).to(device)
-model = GCR_ri(model_cnn,model_gen,train_way=args.train_way,\
-    test_way=args.test_way, shot=args.shot,query=args.query,query_val=args.query_val,f_dim=args.feature_dim).to(device)
+model = MN(model_cnn,lstm_input_size=args.feature_dim,train_way=args.train_way,test_way=args.test_way,\
+    shot=args.shot,query=args.query,query_val=args.query_val).to(device)
+
 # Resume model
+if cnn_ckpt is not None:
+    resume_cnn_part(model_cnn,cnn_ckpt)
 if checkpoint is not None:
-    start_epoch, best_acc = resume_gcr_model(model, checkpoint, args.n_base)
+    start_epoch, best_acc = resume_model(model, checkpoint)
 
 # Create loss criterion & optimizer
-criterion = loss_for_gcr_relation()
+criterion = nn.CrossEntropyLoss()
 
 # Start Evaluation
 print("Evaluation Started".center(60, '#'))
 for epoch in range(start_epoch, start_epoch+1):
     # Eval the model
-    acc,_ = eval_gcr_relation(model,criterion,val_loader,device,epoch,log_interval,writer,args)
+    acc, statistic = eval_mn_pn(model,criterion,val_loader,device,epoch,log_interval,writer,args)
+    mean, std = account_mean_and_std(statistic)
     print('Batch acc on isl: {:.3f}'.format(acc))
 
 print("Evaluation Finished".center(60, '#'))
