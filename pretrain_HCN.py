@@ -25,8 +25,8 @@ batch_size = 8
 # Options
 shot = 5
 dataset = 'isl'
-store_name = 'HCN'
-gproto_name = 'global_proto'
+store_name = 'HCN_' + '%dshot'%shot
+gproto_name = 'global_proto' + '%dshot'%shot
 checkpoint = '/home/liweijie/projects/SLR/checkpoint/20200315_82.106_HCN_isolated_best.pth.tar'
 log_interval = 100
 device_list = '0'

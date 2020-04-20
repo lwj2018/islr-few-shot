@@ -6,7 +6,7 @@ from utils.metricUtils import euclidean_metric
 from utils.critUtils import convert_to_onehot
 
 class GCR_ri(nn.Module):
-    def __init__(self,baseModel,genModel,global_base=None,global_novel=None,
+    def __init__(self,baseModel,global_base=None,global_novel=None,
                 train_way=20,test_way=5,
                 shot=5,query=5,query_val=15,f_dim=1024,
                 z_dim=512):
@@ -20,7 +20,7 @@ class GCR_ri(nn.Module):
         self.z_dim = z_dim
 
         self.baseModel = baseModel
-        self.genModel = genModel
+        # self.genModel = genModel
         self.registrator = Registrator(f_dim,z_dim)
         self.relation1 = Relation1(2*f_dim)
         self.relation2 = Relation2(2*z_dim)
@@ -41,22 +41,22 @@ class GCR_ri(nn.Module):
         proto = self.baseModel(data_shot)
         proto = proto.reshape(self.shot, way, -1)
 
-        if mode == 'train':
-            which_novel = torch.gt(gt,79)
-            which_base = way-torch.numel(gt[which_novel])
+        # if mode == 'train':
+        #     which_novel = torch.gt(gt,79)
+        #     which_base = way-torch.numel(gt[which_novel])
 
-            if which_base < way:
-                proto_base = proto[:,:which_base,:]
-                proto_novel = proto[:,which_base:,:]
-                # Synthesis module corresponds to section 3.2 of the thesis
-                noise = torch.cuda.FloatTensor((way-which_base)*self.shot, self.f_dim).normal_()
-                proto_novel_gen = self.genModel(proto_novel.reshape(self.shot*(way-which_base),-1), noise)
-                proto_novel_gen = proto_novel_gen.reshape(self.shot, way-which_base, -1)
-                proto_novel_wgen = torch.cat([proto_novel,proto_novel_gen])
-                ind_gen = torch.randperm(2*self.shot)
-                proto_novel_f = proto_novel_wgen[ind_gen[:self.shot],:,:]
-                # Corresponds to episodic repesentations in the thesis
-                proto = torch.cat([proto_base, proto_novel_f],1)
+        #     if which_base < way:
+        #         proto_base = proto[:,:which_base,:]
+        #         proto_novel = proto[:,which_base:,:]
+        #         # Synthesis module corresponds to section 3.2 of the thesis
+        #         noise = torch.cuda.FloatTensor((way-which_base)*self.shot, self.f_dim).normal_()
+        #         proto_novel_gen = self.genModel(proto_novel.reshape(self.shot*(way-which_base),-1), noise)
+        #         proto_novel_gen = proto_novel_gen.reshape(self.shot, way-which_base, -1)
+        #         proto_novel_wgen = torch.cat([proto_novel,proto_novel_gen])
+        #         ind_gen = torch.randperm(2*self.shot)
+        #         proto_novel_f = proto_novel_wgen[ind_gen[:self.shot],:,:]
+        #         # Corresponds to episodic repesentations in the thesis
+        #         proto = torch.cat([proto_base, proto_novel_f],1)
 
         proto_final = self.induction(proto)
 
@@ -66,8 +66,8 @@ class GCR_ri(nn.Module):
         # shape of the dist_metric is: way x total_class
         logits2 = self.relation2(proto_new, global_new)
 
-        # similarity = F.normalize(logits2,1,-1)
-        similarity = logits2
+        similarity = F.normalize(logits2,1,-1)
+        # similarity = logits2
         feature = torch.matmul(similarity, torch.cat([self.global_base,self.global_novel]))
         # shape of data_query is: (query x way) x ...
         # shape of feature is: way x f_dim(1600)
@@ -83,9 +83,12 @@ class GCR_ri(nn.Module):
 
         return logits, label, logits2, gt, logits3, gt3
 
+    def get_feature(self, x):
+        return self.baseModel(x)
+
     def get_optim_policies(self,lr):
         return [
-            {'params':self.genModel.parameters(),'lr':lr},
+            # {'params':self.genModel.parameters(),'lr':lr},
             {'params':self.registrator.parameters(),'lr':lr},
             {'params':self.relation1.parameters(),'lr':lr},
             {'params':self.relation2.parameters(),'lr':lr},
@@ -161,7 +164,7 @@ class Relation2(nn.Module):
         x = F.relu(self.fc1(x))
         x = F.relu(self.fc2(x))
         x = self.fc3(x)
-        x = F.sigmoid(x)
+        # x = F.sigmoid(x)
         x = x.squeeze(-1)
         return x
 

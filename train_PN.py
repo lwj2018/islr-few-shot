@@ -82,5 +82,6 @@ for epoch in range(start_epoch, start_epoch + epochs):
         'best': best_acc
     }, is_best, model_path, store_name)
     print("Epoch {} Model Saved".format(epoch+1).center(60, '#'))
+    print('Epoch best acc: {:.3f}'.format(best_acc))
 
 print("Training Finished".center(60, '#'))

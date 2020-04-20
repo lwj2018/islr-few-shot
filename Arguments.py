@@ -15,7 +15,7 @@ class Arguments:
         self.n_base = 400
         self.num_class = 500
         self.train_way = 20
-        self.test_way = 5
+        self.test_way = 10
         self.feature_dim = 1024
         self.n_reserve = 40
         # Options

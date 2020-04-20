@@ -17,15 +17,12 @@ from torch.utils.tensorboard import SummaryWriter
 from utils.dataUtils import getDataloader
 from Arguments import Arguments
 
-# Hyper params 
-epochs = 1000
-learning_rate = 1e-3
 # Options
 shot = 5
 dataset = 'isl'
 store_name = 'test_' + dataset + '_GCR_ri' + '_%dshot'%(shot)
 summary_name = 'runs/' + store_name
-checkpoint = '/home/liweijie/projects/islr-few-shot/checkpoint/20200417_isl_GCR_ri_5shot_best.pth.tar'#5-shot
+checkpoint = '/home/liweijie/projects/islr-few-shot/checkpoint/isl_GCR_ri_5shot_best.pth.tar'#5-shot
 # checkpoint = '/home/liweijie/projects/few-shot/checkpoint/20200404_miniImage_GCR_r_1shot_best.pth.tar'#1-shot
 log_interval = 20
 device_list = '3'
@@ -56,8 +53,8 @@ val_loader3 = DataLoader(dataset=valset3, batch_size = 8,
                         num_workers=8, pin_memory=True, shuffle=True)
 
 model_cnn = gcrHCN().to(device)
-model_gen = Hallucinator(args.feature_dim).to(device)
-model = GCR_ri(model_cnn,model_gen,train_way=args.train_way,\
+# model_gen = Hallucinator(args.feature_dim).to(device)
+model = GCR_ri(model_cnn,train_way=args.train_way,\
     test_way=args.test_way, shot=args.shot,query=args.query,query_val=args.query_val,f_dim=args.feature_dim).to(device)
 # Resume model
 if checkpoint is not None:

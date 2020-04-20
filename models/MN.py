@@ -87,6 +87,9 @@ class MN(nn.Module):
         attention = (distances).softmax(dim=1)
         return attention
 
+    def get_feature(self,x):
+        return self.baseModel(x)
+
     def get_optim_policies(self, lr):
         return [
             {'params':self.parameters(),'lr':lr},

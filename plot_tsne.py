@@ -10,14 +10,16 @@ import torch.optim as optim
 from torch.utils.data import DataLoader
 
 from datasets.CSL_Isolated_Openpose import CSL_Isolated_Openpose
+from datasets.samplers import TsneSampler
 from models.HCN import hcn
 from models.PN import PN
+from models.MN import MN
+from models.GCR_ri import GCR_ri
 from models.gcrHCN import gcrHCN
 from utils.ioUtils import *
 from utils.trainUtils import train_cnn
 from utils.testUtils import eval_cnn
 from torch.utils.tensorboard import SummaryWriter
-from datasets.samplers import PretrainSampler
 from Arguments import Arguments
 from sklearn.manifold import TSNE
 import matplotlib.pyplot as plt
@@ -25,9 +27,11 @@ import matplotlib.pyplot as plt
 # Hyper params
 batch_size = 8
 # Options
+n_class = 50
+n_sample = 20
 shot = 5
 dataset = 'isl'
-model_name = 'PN'
+model_name = 'GCR_ri'
 store_name = model_name
 gproto_name = 'global_proto'
 log_interval = 100
@@ -39,6 +43,10 @@ if model_name == 'HCN':
     checkpoint = '/home/liweijie/projects/islr-few-shot/checkpoint/20200412_HCN_best.pth.tar'
 elif model_name == 'PN':
     checkpoint = '/home/liweijie/projects/islr-few-shot/checkpoint/20200419_isl_PN_5shot_best.pth.tar'
+elif model_name == 'MN':
+    checkpoint = '/home/liweijie/projects/islr-few-shot/checkpoint/20200419_isl_MN_5shot_best.pth.tar'
+elif model_name == 'GCR_ri':
+    checkpoint = '/home/liweijie/projects/islr-few-shot/checkpoint/20200419_isl_GCR_ri_5shot_best.pth.tar'
 
 best_acc = 0.00
 start_epoch = 0
@@ -55,9 +63,10 @@ writer = SummaryWriter(os.path.join('runs/cnn', time.strftime('%Y-%m-%d %H:%M:%S
 
 # Prepare dataset & dataloader
 trainset = CSL_Isolated_Openpose('trainvaltest')
-train_loader = DataLoader(dataset=trainset, batch_size=batch_size,
-                        num_workers=num_workers, pin_memory=True, shuffle=True)
-print('Total size of the train set: %d'%(len(train_loader)))
+train_sampler = TsneSampler(trainset.label,batch_size,select_class=n_class,n_sample=n_sample)
+train_loader = DataLoader(dataset=trainset, batch_sampler=train_sampler,
+                        num_workers=num_workers, pin_memory=True)
+print('Len of the train loader: %d'%(len(train_loader)))
 if model_name == 'HCN':
     model = hcn(args.num_class).to(device)
     start_epoch, best_acc = resume_model(model, checkpoint)
@@ -66,7 +75,17 @@ elif model_name == 'PN':
     model = PN(model_cnn,lstm_input_size=args.feature_dim,train_way=args.train_way,test_way=args.test_way,\
         shot=args.shot,query=args.query,query_val=args.query_val).to(device)
     start_epoch, best_acc = resume_model(model, checkpoint)
-
+elif model_name == 'MN':
+    model_cnn = gcrHCN().to(device)
+    model = MN(model_cnn,lstm_input_size=args.feature_dim,train_way=args.train_way,test_way=args.test_way,\
+        shot=args.shot,query=args.query,query_val=args.query_val).to(device)
+    start_epoch, best_acc = resume_model(model, checkpoint)
+elif model_name == 'GCR_ri':
+    model_cnn = gcrHCN().to(device)
+    model = GCR_ri(model_cnn,train_way=args.train_way,\
+        test_way=args.test_way, shot=args.shot,query=args.query,query_val=args.query_val,f_dim=args.feature_dim).to(device)
+    start_epoch, best_acc = resume_gcr_model(model, checkpoint, args.n_base)
+    
 savename_x = osp.join(out_path,store_name+'_X.npy')
 savename_y = osp.join(out_path,store_name+'_Y.npy')
 saved = 0
@@ -74,12 +93,10 @@ if osp.exists(savename_x) and osp.exists(savename_y):
     saved = 1
 # Account & Save
 if saved == 0:
-    sample_size = 1000
     X = []
     Y = []
     for idx, batch in enumerate(train_loader):
-        if idx >= sample_size: break
-        print('%d/%d'%(idx,sample_size))
+        print('%d/%d'%(idx,len(train_loader)))
         # get the data and labels
         data,lab = [_.to(device) for _ in batch]
         proto = model.get_feature(data)

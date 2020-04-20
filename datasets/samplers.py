@@ -124,3 +124,44 @@ class PretrainSampler():
             else:
                 batch = self.idx_list[i_batch*self.batch_size:]
             yield batch
+
+class TsneSampler():
+    def __init__(self, label, batch_size,
+        n_class=500,select_class=50,n_sample=20, seed=10):
+        self.batch_size = batch_size
+        # Set random seed
+        np.random.seed(seed)
+        # Random select N classes
+        classes = (np.random.rand(select_class)*n_class).astype(np.int)
+        label_set = list(set(label))
+        self.label_set = label_set
+        label = np.array(label)
+        self.m_ind = {}
+        for i in label_set:
+            ind = np.argwhere(label == i).reshape(-1)
+            self.m_ind[i] = ind
+        # For each class, random select M samples
+        idx_list = []
+        for c in classes:
+            l = self.m_ind[c]
+            l = np.random.permutation(l)[:n_sample]
+            idx_list.extend(l)
+
+        idx_list = np.array(idx_list)
+        self.idx_list = torch.Tensor(idx_list).type(torch.LongTensor)
+
+        n = len(self.idx_list) // self.batch_size
+        r = len(self.idx_list) % self.batch_size
+        if r>0 : n += 1
+        self.n_batch = n
+
+    def __len__(self): 
+        return self.n_batch
+
+    def __iter__(self):
+        for i_batch in range(self.n_batch):
+            if (i_batch+1)*self.batch_size < len(self.idx_list):
+                batch = self.idx_list[i_batch*self.batch_size:(i_batch+1)*self.batch_size]
+            else:
+                batch = self.idx_list[i_batch*self.batch_size:]
+            yield batch

@@ -97,5 +97,6 @@ for epoch in range(start_epoch, start_epoch + epochs):
         'global_proto': torch.cat([model.global_base,model.global_novel])
     }, is_best, model_path, store_name)
     print("Epoch {} Model Saved".format(epoch+1).center(60, '#'))
+    print('Epoch best acc: {:.3f}'.format(best_acc))
 
 print("Training Finished".center(60, '#'))

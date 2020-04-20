@@ -51,7 +51,8 @@ class RN(nn.Module):
         label = create_nshot_task_label(way,query).unsqueeze(-1).cuda()
         y_onehot = y_onehot.scatter(1,label,1)
         y_onehot = y_onehot.float()
-        return y_pred, label, y_onehot
+        label = label.squeeze(-1)
+        return y_pred, label
 
     def get_optim_policies(self, lr):
         return [
