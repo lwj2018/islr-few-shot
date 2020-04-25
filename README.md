@@ -1,0 +1,24 @@
+# Experiment result
+## Standard few-shot learning on Isolated Chinese Sign Language Dataset
+- Train setting: 20-way 5-shot
+- The experiment result of PN, RN, MN is base on our implementation
+
+| Model                       | 5-way 1-shot | 5-way 5-shot | 10-way 1-shot | 10-way 5-shot |
+| --------------------------- | ------------ | ------------ | ------------- | ------------- |
+| PN                          |    82.69     |    95.11     |    70.36      |    91.45      |
+| RN                          |    91.37     |    96.85     |    85.01      |    93.90      |
+| MN                          |    85.76     |    95.79     |    79.78      |    93.10      |
+| GCR                         |    79.66     |    83.66     |    70.66      |    78.64      |
+| GCR+relation                |    90.11     |    92.87     |    84.23      |    90.27      |
+| GCR+relation+induction      |    95.78     |    97.63     |    91.76      |    95.67      |
+## General few-shot learning on Isolated Chinese Sign Language Dataset
+- Test with 5-way 5-shot model
+- Accu_a is classify accuracy on all categories
+- Accu_b is classify accuracy on base categories
+- Accu_n is classify accuracy on novel categories
+
+| Model       | Accu_a | Accu_b | Accu_n |
+| ----------- | ------ | ------ | ------ |
+| PN          | 45.60  | 54.88  |  8.50  |
+| MN          | 73.84  | 83.65  | 34.60  |
+| Ours        | 74.14  | 79.90  | 51.10  |

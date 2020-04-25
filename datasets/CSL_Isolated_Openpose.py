@@ -70,7 +70,7 @@ class CSL_Isolated_Openpose(data.Dataset):
         print('video number:%d'%(len(self.data)))
 
     def get_sample_indices(self,num_frames):
-        # ignore the first frame
+        # the first frame has been dropped when transfer to npy
         indices = np.linspace(0,num_frames-1,self.length).astype(int)
         interval = (num_frames-1)//self.length
         if interval>0:

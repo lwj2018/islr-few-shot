@@ -13,6 +13,7 @@ from datasets.CSL_Isolated_Openpose import CSL_Isolated_Openpose
 from datasets.samplers import TsneSampler
 from models.HCN import hcn
 from models.PN import PN
+from models.RN import RN
 from models.MN import MN
 from models.GCR_ri import GCR_ri
 from models.gcrHCN import gcrHCN
@@ -31,7 +32,7 @@ n_class = 50
 n_sample = 20
 shot = 5
 dataset = 'isl'
-model_name = 'GCR_ri'
+model_name = 'RN'
 store_name = model_name
 gproto_name = 'global_proto'
 log_interval = 100
@@ -43,6 +44,8 @@ if model_name == 'HCN':
     checkpoint = '/home/liweijie/projects/islr-few-shot/checkpoint/20200412_HCN_best.pth.tar'
 elif model_name == 'PN':
     checkpoint = '/home/liweijie/projects/islr-few-shot/checkpoint/20200419_isl_PN_5shot_best.pth.tar'
+elif model_name == 'RN':
+    checkpoint = '/home/liweijie/projects/islr-few-shot/checkpoint/20200420_isl_RN_5shot_best.pth.tar'
 elif model_name == 'MN':
     checkpoint = '/home/liweijie/projects/islr-few-shot/checkpoint/20200419_isl_MN_5shot_best.pth.tar'
 elif model_name == 'GCR_ri':
@@ -73,6 +76,11 @@ if model_name == 'HCN':
 elif model_name == 'PN':
     model_cnn = gcrHCN().to(device)
     model = PN(model_cnn,lstm_input_size=args.feature_dim,train_way=args.train_way,test_way=args.test_way,\
+        shot=args.shot,query=args.query,query_val=args.query_val).to(device)
+    start_epoch, best_acc = resume_model(model, checkpoint)
+elif model_name == 'RN':
+    model_cnn = gcrHCN().to(device)
+    model = RN(model_cnn,lstm_input_size=args.feature_dim,train_way=args.train_way,test_way=args.test_way,\
         shot=args.shot,query=args.query,query_val=args.query_val).to(device)
     start_epoch, best_acc = resume_model(model, checkpoint)
 elif model_name == 'MN':

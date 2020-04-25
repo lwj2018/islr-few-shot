@@ -146,7 +146,7 @@ def train_gcr_relation(model, criterion,
     avg_acc3 = AverageMeter()
     # Create recorder
     averagers = [avg_loss1, avg_loss2, avg_loss3, avg_acc1, avg_acc2, avg_acc3]
-    names = ['train loss1','train loss2','train loss3','train acc1','train acc2','train acc3']
+    names = ['train loss','train loss2','train loss3','train acc','train acc2','train acc3']
     recoder = Recorder(averagers,names,writer,batch_time,data_time)
     # Set trainning mode
     model.train()
@@ -254,60 +254,3 @@ def train_mn_pn(model, criterion,
             # Reset average meters 
             recoder.reset()
 
-def train_rn(model, criterion,
-          optimizer,
-          trainloader, device, epoch, 
-          log_interval, writer, args):
-    batch_time = AverageMeter()
-    data_time = AverageMeter()
-    avg_loss = AverageMeter()
-    avg_acc = AverageMeter()
-    # Create recorder
-    averagers = [avg_loss, avg_acc]
-    names = ['train loss','train acc']
-    recoder = Recorder(averagers,names,writer,batch_time,data_time)
-    # Set trainning mode
-    model.train()
-
-    recoder.tik()
-    recoder.data_tik()
-    for i, batch in enumerate(trainloader):
-        # measure data loading time
-        recoder.data_tok()
-
-        # get the inputs and labels
-        data, lab = [_.to(device) for _ in batch]
-
-        # forward
-        p = args.shot * args.train_way
-        data_shot = data[:p]
-        data_query = data[p:]
-
-        y_pred, label, onehot = model(data_shot,data_query)
-        # print('lab: {}'.format(lab.view((args.shot+args.query),args.train_way)[0]))
-        # compute the loss
-        loss = criterion(y_pred, onehot)
-        # print('y_pred: {}'.format(y_pred))
-        # print('label: {}'.format(label))
-
-        # backward & optimize
-        optimizer.zero_grad()
-        loss.backward()
-        optimizer.step()
-
-        # compute the metrics
-        acc = accuracy(y_pred, label)[0]
-
-        # measure elapsed time
-        recoder.tok()
-        recoder.tik()
-        recoder.data_tik()
-
-        # update average value
-        vals = [loss.item(),acc]
-        recoder.update(vals)
-
-        if i % log_interval == log_interval-1:
-            recoder.log(epoch,i,len(trainloader))
-            # Reset average meters 
-            recoder.reset()

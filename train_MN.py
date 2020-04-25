@@ -17,14 +17,14 @@ from Arguments import Arguments
 
 # Hyper params 
 epochs = 5
-learning_rate = 1e-4
+learning_rate = 1e-3
 # Options
 shot = 1
 dataset = 'isl'
 store_name = dataset + '_MN' + '_%dshot'%(shot)
 summary_name = 'runs/' + store_name
-cnn_ckpt = '/home/liweijie/projects/islr-few-shot/checkpoint/20200412_HCN_best.pth.tar'
-checkpoint = '/home/liweijie/projects/islr-few-shot/checkpoint/isl_MN_5shot_best.pth.tar'
+cnn_ckpt = '/home/liweijie/projects/islr-few-shot/checkpoint/20200421_HCN_1shot_best.pth.tar'
+checkpoint = None#'/home/liweijie/projects/islr-few-shot/checkpoint/isl_MN_5shot_best.pth.tar'
 log_interval = 20
 device_list = '0'
 num_workers = 8
@@ -59,8 +59,8 @@ if checkpoint is not None:
 criterion = nn.NLLLoss()
 
 policies = model.get_optim_policies(learning_rate)
-optimizer = torch.optim.SGD(policies)
-# optimizer = torch.optim.SGD(policies, momentum=0.9)
+optimizer = torch.optim.SGD(policies,momentum=0.9)
+# optimizer = torch.optim.Adam(policies)
 
 lr_scheduler = torch.optim.lr_scheduler.MultiStepLR(optimizer, milestones=[30,60], gamma=0.1)
 

@@ -23,10 +23,10 @@ epochs = 2000
 learning_rate = 1e-5
 batch_size = 8
 # Options
-shot = 5
+shot = 1
 dataset = 'isl'
 store_name = 'HCN_' + '%dshot'%shot
-gproto_name = 'global_proto' + '%dshot'%shot
+gproto_name = 'global_proto_' + '%dshot'%shot
 checkpoint = '/home/liweijie/projects/SLR/checkpoint/20200315_82.106_HCN_isolated_best.pth.tar'
 log_interval = 100
 device_list = '0'

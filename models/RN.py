@@ -54,6 +54,9 @@ class RN(nn.Module):
         label = label.squeeze(-1)
         return y_pred, label
 
+    def get_feature(self, x):
+        return self.baseModel(x)
+
     def get_optim_policies(self, lr):
         return [
             {'params':self.parameters(),'lr':lr},
