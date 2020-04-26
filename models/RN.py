@@ -54,6 +54,11 @@ class RN(nn.Module):
         label = label.squeeze(-1)
         return y_pred, label
 
+    def gfsl_test(self, support, queries):
+        queries = self.baseModel.get_feature(queries)
+        distances = self.relation(queries,support)
+        return distances
+
     def get_feature(self, x):
         return self.baseModel(x)
 

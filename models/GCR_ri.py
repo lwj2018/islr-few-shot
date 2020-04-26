@@ -41,23 +41,6 @@ class GCR_ri(nn.Module):
         proto = self.baseModel(data_shot)
         proto = proto.reshape(self.shot, way, -1)
 
-        # if mode == 'train':
-        #     which_novel = torch.gt(gt,79)
-        #     which_base = way-torch.numel(gt[which_novel])
-
-        #     if which_base < way:
-        #         proto_base = proto[:,:which_base,:]
-        #         proto_novel = proto[:,which_base:,:]
-        #         # Synthesis module corresponds to section 3.2 of the thesis
-        #         noise = torch.cuda.FloatTensor((way-which_base)*self.shot, self.f_dim).normal_()
-        #         proto_novel_gen = self.genModel(proto_novel.reshape(self.shot*(way-which_base),-1), noise)
-        #         proto_novel_gen = proto_novel_gen.reshape(self.shot, way-which_base, -1)
-        #         proto_novel_wgen = torch.cat([proto_novel,proto_novel_gen])
-        #         ind_gen = torch.randperm(2*self.shot)
-        #         proto_novel_f = proto_novel_wgen[ind_gen[:self.shot],:,:]
-        #         # Corresponds to episodic repesentations in the thesis
-        #         proto = torch.cat([proto_base, proto_novel_f],1)
-
         proto_final = self.induction(proto)
 
         # shape of global_new is: total_class(100) x z_dim(512)
