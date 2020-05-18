@@ -19,11 +19,11 @@ from datasets.samplers import PretrainSampler
 from Arguments import Arguments
 
 # Hyper params 
-epochs = 2000
+epochs = 1000
 learning_rate = 1e-5
 batch_size = 8
 # Options
-shot = 1
+shot = 5
 dataset = 'isl'
 store_name = 'HCN_' + '%dshot'%shot
 gproto_name = 'global_proto_' + '%dshot'%shot
@@ -48,12 +48,12 @@ writer = SummaryWriter(os.path.join('runs/cnn', time.strftime('%Y-%m-%d %H:%M:%S
 
 # Prepare dataset & dataloader
 trainset = CSL_Isolated_Openpose('trainvaltest')
-train_sampler = PretrainSampler(trainset.label, args.shot, args.n_base, batch_size)
+train_sampler = PretrainSampler(trainset.label, args.shot, args.n_base, args.n_reserve, batch_size)
 train_loader = DataLoader(dataset=trainset, batch_sampler=train_sampler,
                         num_workers=num_workers, pin_memory=True)
 print('Total size of the train set: %d'%(len(train_loader)))
 valset = CSL_Isolated_Openpose('trainvaltest')
-val_sampler = PretrainSampler(valset.label, args.shot, args.n_base, batch_size)
+val_sampler = PretrainSampler(valset.label, args.shot, args.n_base, args.n_reserve, batch_size)
 val_loader = DataLoader(dataset=valset, batch_sampler=val_sampler,
                         num_workers=num_workers, pin_memory=True)
 model = hcn(args.num_class).to(device)

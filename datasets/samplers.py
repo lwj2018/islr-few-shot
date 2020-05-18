@@ -3,13 +3,13 @@ import numpy as np
 import time
 
 class CategoriesSampler_train():
-    def __init__(self, label, n_batch, n_cls, n_shot,n_query, n_base_class):
+    def __init__(self, label, n_batch, n_cls, n_shot,n_query, n_base_class,n_reserve):
         self.n_batch = n_batch
         self.n_cls = n_cls
         self.n_shot = n_shot
         self.n_query = n_query
         self.n_base_class = n_base_class
-        self.n_reserve = 40
+        self.n_reserve = n_reserve
         self.n_try = 30
 
         label_set = list(set(label))
@@ -89,13 +89,12 @@ class CategoriesSampler_val():
             yield batch
 
 class PretrainSampler():
-    def __init__(self, label, n_shot, n_base_class, batch_size):
+    def __init__(self, label, n_shot, n_base_class, n_reserve, batch_size):
         self.n_shot = n_shot
         self.n_base_class = n_base_class
         self.batch_size = batch_size
         # number of samples in a class, !! Specific setting for isl
         n_samples = 50
-        n_reserve = 40
 
         idx_list = []
         for idx, lb in enumerate(label):

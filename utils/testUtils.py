@@ -6,6 +6,8 @@ from utils.metricUtils import *
 from utils.Averager import AverageMeter
 from utils.Recorder import Recorder
 from utils.fewshotUtils import create_nshot_task_label
+from models.MAML import replace_grad
+from collections import OrderedDict
 
 def eval_cnn(model, criterion, valloader, 
         device, epoch, log_interval, writer, args):
@@ -323,6 +325,82 @@ def test_mn(model, global_proto, criterion,
 
         if i % log_interval == log_interval-1:
             recoder.log(epoch,i,len(valloader),mode='Test')
+
+    return recoder.get_avg('val acc')
+
+def eval_maml(model, criterion,
+          valloader, device, epoch, 
+          log_interval, writer, args):
+    batch_time = AverageMeter()
+    data_time = AverageMeter()
+    avg_loss = AverageMeter()
+    avg_acc = AverageMeter()
+    # Create recorder
+    averagers = [avg_loss, avg_acc]
+    names = ['val loss','val acc']
+    recoder = Recorder(averagers,names,writer,batch_time,data_time)
+    # Set evaluation mode
+    model.eval()
+
+    recoder.tik()
+    recoder.data_tik()
+    # Settings
+    create_graph = (True if args.order == 2 else False)
+    for i, batch in enumerate(valloader):
+        # measure data loading time
+        recoder.data_tok()
+
+        # get the inputs and labels
+        data, lab = [_.to(device) for _ in batch]
+
+        # forward
+        # data = data.view( ((args.shot+args.query),args.train_way) + data.size()[-3:] )
+        # data = data.permute(1,0,2,3,4).contiguous()
+        # data = data.view( (-1,) + data.size()[-3:] )
+        p = args.shot * args.test_way
+        data_shot = data[:p]
+        data_query = data[p:]
+        data_shape = data.size()[-3:]
+
+
+        # Create a fast model using the current meta model weights
+        fast_weights = OrderedDict(model.named_parameters())
+
+        # Train the model for `inner_train_steps` iterations
+        for inner_batch in range(args.inner_train_steps):
+            # Perform update of model weights
+            y = create_nshot_task_label(args.test_way, args.shot).to(device)
+            logits = model.functional_forward(data_shot, fast_weights)
+            loss = criterion(logits, y)
+            gradients = torch.autograd.grad(loss, fast_weights.values(), create_graph=create_graph)
+
+            # Update weights manually
+            fast_weights = OrderedDict(
+                (name, param - args.inner_lr * grad)
+                for ((name, param), grad) in zip(fast_weights.items(), gradients)
+            )
+        
+        # Do a pass of the model on the validation data from the current task
+        y = create_nshot_task_label(args.test_way, args.query_val).to(device)
+        logits = model.functional_forward(data_query, fast_weights)
+        loss = criterion(logits, y)
+        loss.backward(retain_graph=True)
+
+        # Get post-update accuracies
+        y_pred = logits.softmax(-1)
+        acc = accuracy(y_pred, y)[0]
+
+        # measure elapsed time
+        recoder.tok()
+        recoder.tik()
+        recoder.data_tik()
+
+        # update average value
+        vals = [loss.item(),acc]
+        recoder.update(vals)
+
+        if i % log_interval == log_interval-1:
+            recoder.log(epoch,i,len(valloader),mode='Eval')
 
     return recoder.get_avg('val acc')
 

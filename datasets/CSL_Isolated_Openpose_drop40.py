@@ -20,14 +20,14 @@ class CSL_Isolated_Openpose2(data.Dataset):
     
     def __init__(self, setname, skeleton_root=skeleton_root, 
             csv_root=csv_root,
-            length=32, is_normalize=True):
+            length=32, is_normalize=True, n_reserve=40):
         self.setname = setname
         self.skeleton_root = skeleton_root
         self.csv_root = csv_root
         self.length = length
         self.is_normalize = is_normalize
         self.n_samples = 50
-        self.n_drop = 40
+        self.n_reserve = n_reserve
         
         self._parse_list()
 
@@ -56,7 +56,7 @@ class CSL_Isolated_Openpose2(data.Dataset):
         label = []
 
         for i,l in enumerate(lines):
-            if i % self.n_samples >= self.n_drop:
+            if i % self.n_samples >= self.n_reserve:
                 name, lb = l.split(',')
                 path = osp.join(self.skeleton_root, name)
                 lb = int(lb)
