@@ -19,15 +19,18 @@ from datasets.samplers import PretrainSampler
 from Arguments import Arguments
 
 # Hyper params 
-epochs = 1000
+epochs = 100
 learning_rate = 1e-5
 batch_size = 8
 # Options
 shot = 5
 dataset = 'isl'
-store_name = 'HCN_' + '%dshot'%shot
-gproto_name = 'global_proto_' + '%dshot'%shot
-checkpoint = '/home/liweijie/projects/SLR/checkpoint/20200315_82.106_HCN_isolated_best.pth.tar'
+# Get args
+args = Arguments(shot,dataset)
+store_name = 'HCN_' + '%dshot'%shot + '_f%d'%args.feature_dim
+gproto_name = 'global_proto_' + '%dshot'%shot + '_f%d'%args.feature_dim
+conv_ckpt = '/home/liweijie/projects/islr-few-shot/checkpoint/20200412_HCN_best.pth.tar'
+checkpoint = None#'/home/liweijie/projects/islr-few-shot/checkpoint/20200412_HCN_best.pth.tar'
 log_interval = 100
 device_list = '0'
 num_workers = 8
@@ -36,8 +39,6 @@ model_path = "./checkpoint"
 best_acc = 0.00
 start_epoch = 0
 
-# Get args
-args = Arguments(shot,dataset)
 # Use specific gpus
 os.environ["CUDA_VISIBLE_DEVICES"]=device_list
 # Device setting
@@ -56,8 +57,10 @@ valset = CSL_Isolated_Openpose('trainvaltest')
 val_sampler = PretrainSampler(valset.label, args.shot, args.n_base, args.n_reserve, batch_size)
 val_loader = DataLoader(dataset=valset, batch_sampler=val_sampler,
                         num_workers=num_workers, pin_memory=True)
-model = hcn(args.num_class).to(device)
+model = hcn(args.num_class,f_dim=args.feature_dim).to(device)
 # Resume model
+if conv_ckpt is not None:
+    resume_conv_for_hcn(model, conv_ckpt)
 if checkpoint is not None:
     start_epoch, best_acc = resume_model(model, checkpoint)
 # Create loss criterion & optimizer
@@ -66,7 +69,7 @@ optimizer = optim.Adam(model.parameters(), lr=learning_rate)
 
 # Start training
 print("Training Started".center(60, '#'))
-for epoch in range(start_epoch, epochs):
+for epoch in range(start_epoch, start_epoch + epochs):
     # Train the model
     global_proto = train_cnn(model, criterion, optimizer, train_loader, device, epoch, log_interval, writer, args)
     # Eval the model

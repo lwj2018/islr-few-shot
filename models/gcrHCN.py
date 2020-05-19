@@ -8,7 +8,8 @@ class gcrHCN(nn.Module):
     def __init__(self, in_channel=2,
                             length=32,
                             num_joint=10,
-                            dropout=0.2):
+                            dropout=0.2,
+                            f_dim=256):
         super(gcrHCN, self).__init__()
         self.in_channel = in_channel
         self.length = length
@@ -49,11 +50,18 @@ class gcrHCN(nn.Module):
             nn.Dropout2d(p=dropout),
             nn.MaxPool2d(2)
         )
+        scale = 16
+        self.fc7 = nn.Sequential(
+            nn.Linear(256*(length//scale)*(32//scale),f_dim),
+            nn.ReLU(),
+            nn.Dropout2d(p=dropout)
+        )
 
 
     def forward(self,x):
         x = self.get_feature(x)
         x = x.view(x.size(0),-1)
+        x = self.feature_project(x)
         return x
 
     def get_feature(self,input):
@@ -87,6 +95,10 @@ class gcrHCN(nn.Module):
         # out:  N J T(T/16) D
         # Concretely, shape of out is: N x 256 x 2 x 2
         return out
+
+    def feature_project(self,x):
+        x = self.fc7(x)
+        return x
 
 
 class HierarchyConv(nn.Module):

@@ -103,6 +103,32 @@ def resume_cnn_part(model, checkpoint):
     "Epoch: {}\n"
     "Best: {:.3f}%".format(checkpoint,epoch,best))
 
+def resume_conv_for_hcn(model, checkpoint):
+    params_dict = torch.load(checkpoint)
+    model_dict = model.state_dict()
+    state_dict = params_dict['state_dict']
+    state_dict = {k : v for k,v in state_dict.items() if not 'fc' in k}
+    model_dict.update(state_dict)
+    model.load_state_dict(model_dict)
+
+    epoch = params_dict['epoch']
+    best = params_dict['best']
+    print("Load part of CNN from {}: \n"
+    "Epoch: {}\n"
+    "Best: {:.3f}%".format(checkpoint,epoch,best))
+
+def resume_cnn_part_with_fc7(model, checkpoint):
+    params_dict = torch.load(checkpoint)
+    state_dict = params_dict['state_dict']
+    state_dict = {k : v for k,v in state_dict.items() if not 'fc8' in k}
+    model.load_state_dict(state_dict)
+
+    epoch = params_dict['epoch']
+    best = params_dict['best']
+    print("Load part of CNN from {}: \n"
+    "Epoch: {}\n"
+    "Best: {:.3f}%".format(checkpoint,epoch,best))
+
 def resume_gcrr_from_gcrri(model,checkpoint,n_base):
     params_dict = torch.load(checkpoint)
     state_dict = params_dict['state_dict']

@@ -20,7 +20,6 @@ class GCR_ri(nn.Module):
         self.z_dim = z_dim
 
         self.baseModel = baseModel
-        # self.genModel = genModel
         self.registrator = Registrator(f_dim,z_dim)
         self.relation1 = Relation1(2*f_dim)
         self.relation2 = Relation2(2*z_dim)
@@ -71,7 +70,6 @@ class GCR_ri(nn.Module):
 
     def get_optim_policies(self,lr):
         return [
-            # {'params':self.genModel.parameters(),'lr':lr},
             {'params':self.registrator.parameters(),'lr':lr},
             {'params':self.relation1.parameters(),'lr':lr},
             {'params':self.relation2.parameters(),'lr':lr},
@@ -82,7 +80,6 @@ class GCR_ri(nn.Module):
 
     def get_finetune_policies(self,lr):
         return [
-            {'params':self.genModel.parameters(),'lr':lr},
             {'params':self.registrator.parameters(),'lr':lr},
             {'params':self.relation1.parameters(),'lr':lr},
             {'params':self.relation2.parameters(),'lr':lr},

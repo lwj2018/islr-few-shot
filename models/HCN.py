@@ -8,7 +8,8 @@ class hcn(nn.Module):
     def __init__(self,num_class, in_channel=2,
                             length=32,
                             num_joint=10,
-                            dropout=0.2):
+                            dropout=0.2,
+                            f_dim=256):
         super(hcn, self).__init__()
         self.num_class = num_class
         self.in_channel = in_channel
@@ -54,11 +55,11 @@ class hcn(nn.Module):
         # scale related to total number of maxpool layer
         scale = 16
         self.fc7 = nn.Sequential(
-            nn.Linear(256*(length//scale)*(32//scale),256),
+            nn.Linear(256*(length//scale)*(32//scale),f_dim),
             nn.ReLU(),
             nn.Dropout2d(p=dropout)
         )
-        self.fc8 = nn.Linear(256,self.num_class)
+        self.fc8 = nn.Linear(f_dim,self.num_class)
 
     def forward(self,input):
         output = self.get_feature(input)
@@ -95,11 +96,11 @@ class hcn(nn.Module):
         out = self.conv6(out)
         # out:  N J T(T/16) D
         out = out.view(out.size(0),-1)
+        out = self.fc7(out)
         return out
 
     def classify(self,input):
-        out = self.fc7(input)
-        out = self.fc8(out)
+        out = self.fc8(input)
 
         t = out
         assert not ((t != t).any())# find out nan in tensor

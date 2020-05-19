@@ -22,7 +22,7 @@ shot = 5
 dataset = 'isl'
 store_name = 'test_' + dataset + '_GCR_ri' + '_%dshot'%(shot)
 summary_name = 'runs/' + store_name
-checkpoint = '/home/liweijie/projects/islr-few-shot/checkpoint/isl_GCR_ri_5shot_best.pth.tar'#5-shot
+checkpoint = '/home/liweijie/projects/islr-few-shot/checkpoint/isl_GCR_ri_5shot_f64_best.pth.tar'#5-shot
 # checkpoint = '/home/liweijie/projects/few-shot/checkpoint/20200404_miniImage_GCR_r_1shot_best.pth.tar'#1-shot
 log_interval = 20
 device_list = '3'
@@ -52,7 +52,7 @@ valset3 = CSL_Isolated_Openpose2('test')
 val_loader3 = DataLoader(dataset=valset3, batch_size = 8,
                         num_workers=8, pin_memory=True, shuffle=True)
 
-model_cnn = gcrHCN().to(device)
+model_cnn = gcrHCN(f_dim=args.feature_dim).to(device)
 # model_gen = Hallucinator(args.feature_dim).to(device)
 model = GCR_ri(model_cnn,train_way=args.train_way,\
     test_way=args.test_way, shot=args.shot,query=args.query,query_val=args.query_val,f_dim=args.feature_dim).to(device)
