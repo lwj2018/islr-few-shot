@@ -8,7 +8,7 @@ from utils.critUtils import convert_to_onehot
 class GCR_relation(nn.Module):
     def __init__(self,baseModel,global_base=None,global_novel=None,
                 train_way=20,test_way=5,
-                shot=5,query=5,query_val=15,f_dim=1600,
+                shot=5,query=5,query_val=15,f_dim=1024,
                 z_dim=512):
         super(GCR_relation,self).__init__()
         self.train_way = train_way
@@ -79,12 +79,13 @@ class GCR_relation(nn.Module):
         # shape of data_query is: (query x way) x ...
         # shape of feature is: way x f_dim(1600)
         # so the shape of result is (query x way) x way
-        logits = self.relation1(self.baseModel(data_query),feature)
+        q_proto = self.baseModel(data_query)
+        logits = self.relation1(q_proto,feature)
         label = torch.arange(way).repeat(query)
         label = label.type(torch.cuda.LongTensor)
 
-        gt3 = gt.repeat(self.shot)
-        logits3 = self.relation1(proto.reshape(self.shot*way,-1),torch.cat([self.global_base,self.global_novel]))
+        gt3 = gt.repeat(query)
+        logits3 = self.relation1(q_proto.reshape(query*way,-1),torch.cat([self.global_base,self.global_novel]))
 
         return logits, label, logits2, gt, logits3, gt3
 

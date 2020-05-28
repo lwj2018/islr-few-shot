@@ -12,7 +12,7 @@ from models.gcrHCN import gcrHCN
 from models.Hallucinator import Hallucinator
 from utils.ioUtils import *
 from utils.critUtils import loss_for_gcr
-from utils.testUtils import test_gcr
+from utils.testUtils import test_gcr, evaluate_confusion_matrix
 from torch.utils.tensorboard import SummaryWriter
 from utils.dataUtils import getDataloader
 from Arguments import Arguments
@@ -66,11 +66,8 @@ criterion = nn.CrossEntropyLoss()
 # Start Test
 print("Test Started".center(60, '#'))
 for epoch in range(start_epoch, start_epoch+1):
-    acc = test_gcr(model,criterion,val_loader3,device,epoch,log_interval,writer,args,model.relation1)
+    acc = evaluate_confusion_matrix(model,criterion,val_loader3,device,epoch,log_interval,writer,args,model.relation1,
+                name='cmat/'+ store_name+'_cmat.csv')
     print('Batch accu_n on isl: {:.3f}'.format(acc))
-    acc = test_gcr(model,criterion,val_loader,device,epoch,log_interval,writer,args,model.relation1)
-    print('Batch accu_a on isl: {:.3f}'.format(acc))
-    acc = test_gcr(model,criterion,val_loader2,device,epoch,log_interval,writer,args,model.relation1)
-    print('Batch accu_b on isl: {:.3f}'.format(acc))
 
 print("Test Finished".center(60, '#'))

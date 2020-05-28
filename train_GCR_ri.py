@@ -25,14 +25,14 @@ dataset = 'isl'
 args = Arguments(shot,dataset)
 store_name = dataset + '_GCR_ri' + '_%dshot'%(shot) + '_f%d'%(args.feature_dim)
 summary_name = 'runs/' + store_name
-cnn_ckpt = '/home/liweijie/projects/islr-few-shot/checkpoint/HCN_5shot_f32_best.pth.tar'
-global_ckpt = '/home/liweijie/projects/islr-few-shot/checkpoint/global_proto_5shot_f32_best.pth.tar'
+cnn_ckpt = '/home/liweijie/projects/islr-few-shot/checkpoint/HCN_5shot_f192_best.pth.tar'
+global_ckpt = '/home/liweijie/projects/islr-few-shot/checkpoint/global_proto_5shot_f192_best.pth.tar'
 gcrr_ckpt = None#'/home/liweijie/projects/few-shot/checkpoint/20200403_miniImage_GCR_r_checkpoint.pth.tar'
 checkpoint = None
 # checkpoint = '/home/liweijie/projects/islr-few-shot/checkpoint/isl_GCR_ri_5shot_10reserve_best.pth.tar'#5-shot
 # checkpoint = '/home/liweijie/projects/islr-few-shot/checkpoint/isl_GCR_ri_1shot_checkpoint.pth.tar'#1-shot
 log_interval = 20
-device_list = '3'
+device_list = '0'
 model_path = "./checkpoint"
 
 start_epoch = 0

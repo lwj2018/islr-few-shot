@@ -6,7 +6,7 @@ import torch.nn.functional as F
 from torch.utils.data import DataLoader
 
 from models.GCR_relation import GCR_relation
-from models.gcrHCN import gcrHCN
+from models.gcrHCN_origin import gcrHCN
 from utils.ioUtils import *
 from utils.critUtils import loss_for_gcr, loss_for_gcr_relation
 from utils.trainUtils import train_gcr_relation
@@ -16,10 +16,10 @@ from utils.dataUtils import getDataloader
 from Arguments import Arguments
 
 # Hyper params 
-epochs = 50
-learning_rate = 1e-4
+epochs = 10
+learning_rate = 1e-3
 # Options
-shot = 1
+shot = 5
 dataset = 'isl'
 store_name = dataset + '_GCR_r' + '_%dshot'%(shot)
 summary_name = 'runs/' + store_name
@@ -27,8 +27,8 @@ cnn_ckpt = '/home/liweijie/projects/islr-few-shot/checkpoint/20200412_HCN_best.p
 reg_ckpt = None
 global_ckpt = '/home/liweijie/projects/islr-few-shot/checkpoint/20200412_global_proto_best.pth.tar'
 gcrri_ckpt = None#'/home/liweijie/projects/islr-few-shot/checkpoint/20200416_13.80_isl_GCR_ri_5shot_best.pth.tar'
-gcr_ckpt = '/home/liweijie/projects/islr-few-shot/checkpoint/isl_GCR_5shot_best.pth.tar'
-checkpoint = '/home/liweijie/projects/islr-few-shot/checkpoint/isl_GCR_r_5shot_best.pth.tar'
+gcr_ckpt = None#'/home/liweijie/projects/islr-few-shot/checkpoint/isl_GCR_5shot_best.pth.tar'
+checkpoint = None#'/home/liweijie/projects/islr-few-shot/checkpoint/isl_GCR_r_5shot_best.pth.tar'
 log_interval = 20
 device_list = '0'
 num_workers = 8
@@ -50,8 +50,8 @@ writer = SummaryWriter(os.path.join(summary_name, time.strftime('%Y-%m-%d %H:%M:
 train_loader, val_loader = getDataloader(dataset,args)
 
 model_cnn = gcrHCN().to(device)
-model = GCR_relation(model_cnn,train_way=args.train_way,test_way=args.test_way, 
-    shot=args.shot,query=args.query,query_val=args.query_val,f_dim=args.feature_dim).to(device)
+# model = GCR_relation(model_cnn,train_way=args.train_way,test_way=args.test_way, 
+#     shot=args.shot,query=args.query,query_val=args.query_val,f_dim=args.feature_dim).to(device)
 # Resume model
 if cnn_ckpt is not None:
     resume_cnn_part(model_cnn,cnn_ckpt)
@@ -64,8 +64,8 @@ if gcr_ckpt is not None:
 if checkpoint is not None:
     start_epoch, best_acc = resume_gcr_model(model, checkpoint, args.n_base)
 global_base, global_novel = load_global_proto(global_ckpt,args)
-# model = GCR_relation(model_cnn,global_base=global_base,global_novel=global_novel,train_way=args.train_way,\
-#     test_way=args.test_way, shot=args.shot,query=args.query,query_val=args.query_val,f_dim=args.feature_dim).to(device)
+model = GCR_relation(model_cnn,global_base=global_base,global_novel=global_novel,train_way=args.train_way,\
+    test_way=args.test_way, shot=args.shot,query=args.query,query_val=args.query_val,f_dim=args.feature_dim).to(device)
 
 # Create loss criterion & optimizer
 criterion = loss_for_gcr_relation()

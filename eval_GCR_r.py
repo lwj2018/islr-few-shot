@@ -6,7 +6,7 @@ import torch.nn.functional as F
 from torch.utils.data import DataLoader
 
 from models.GCR_relation import GCR_relation
-from models.gcrHCN import gcrHCN
+from models.gcrHCN_origin import gcrHCN
 from models.Hallucinator import Hallucinator
 from utils.ioUtils import *
 from utils.critUtils import loss_for_gcr, loss_for_gcr_relation
@@ -20,11 +20,11 @@ from Arguments import Arguments
 epochs = 2000
 learning_rate = 1e-3
 # Options
-shot = 1
+shot = 5
 dataset = 'isl'
 store_name = 'eval_' + dataset + '_GCR_r' + '_%dshot'%(shot)
 summary_name = 'runs/' + store_name
-checkpoint = '/home/liweijie/projects/islr-few-shot/checkpoint/isl_GCR_r_1shot_best.pth.tar'
+checkpoint = '/home/liweijie/projects/islr-few-shot/checkpoint/20200419_isl_GCR_r_5shot_best.pth.tar'
 log_interval = 20
 device_list = '0'
 model_path = "./checkpoint"
