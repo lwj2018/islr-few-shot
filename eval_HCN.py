@@ -27,9 +27,9 @@ shot = 5
 dataset = 'isl'
 store_name = 'HCN'
 gproto_name = 'global_proto'
-checkpoint = '/home/liweijie/projects/islr-few-shot/checkpoint/HCN_5shot_f192_best.pth.tar'
+checkpoint = '/home/liweijie/projects/islr-few-shot/checkpoint/HCN_5shot_f96_best.pth.tar'
 log_interval = 100
-device_list = '1'
+device_list = '0'
 num_workers = 8
 model_path = "./checkpoint"
 

@@ -5,8 +5,8 @@ import torch
 import torch.nn.functional as F
 from torch.utils.data import DataLoader
 
-from models.GCR_ri import GCR_ri
-from models.gcrHCN_origin import gcrHCN
+from models.GCR_expand import GCR_ex
+from models.gcrHCN import gcrHCN
 from models.Hallucinator import Hallucinator
 from utils.ioUtils import *
 from utils.critUtils import loss_for_gcr, loss_for_gcr_relation
@@ -18,15 +18,15 @@ from Arguments import Arguments
 
 # Hyper params 
 epochs = 10
-learning_rate = 1e-3
+learning_rate = 1e-4
 # Options
 shot = 5
 dataset = 'isl'
 args = Arguments(shot,dataset)
-store_name = dataset + '_GCR_ri' + '_%dshot'%(shot) + '_f%d'%(args.feature_dim)
+store_name = dataset + '_GCR_ex' + '_%dshot'%(shot) + '_f%d'%(args.feature_dim)
 summary_name = 'runs/' + store_name
-cnn_ckpt = '/home/liweijie/projects/islr-few-shot/checkpoint/HCN_5shot_f96_best.pth.tar'
-global_ckpt = '/home/liweijie/projects/islr-few-shot/checkpoint/global_proto_5shot_f96_best.pth.tar'
+cnn_ckpt = '/home/liweijie/projects/islr-few-shot/checkpoint/HCN_5shot_f128_best.pth.tar'
+global_ckpt = '/home/liweijie/projects/islr-few-shot/checkpoint/global_proto_5shot_f128_best.pth.tar'
 gcrr_ckpt = None#'/home/liweijie/projects/few-shot/checkpoint/20200403_miniImage_GCR_r_checkpoint.pth.tar'
 checkpoint = None
 # checkpoint = '/home/liweijie/projects/islr-few-shot/checkpoint/isl_GCR_ri_5shot_10reserve_best.pth.tar'#5-shot
@@ -49,7 +49,7 @@ writer = SummaryWriter(os.path.join(summary_name, time.strftime('%Y-%m-%d %H:%M:
 train_loader, val_loader = getDataloader(dataset,args)
 
 model_cnn = gcrHCN(f_dim=args.feature_dim).to(device)
-# model = GCR_ri(model_cnn,train_way=args.train_way,\
+# model = GCR_ex(model_cnn,train_way=args.train_way,\
 #     test_way=args.test_way, shot=args.shot,query=args.query,query_val=args.query_val,f_dim=args.feature_dim).to(device)
 # Resume model
 if cnn_ckpt is not None:
@@ -60,7 +60,7 @@ if checkpoint is not None:
     start_epoch, best_acc = resume_gcr_model(model, checkpoint, args.n_base)
 global_base, global_novel = load_global_proto(global_ckpt,args)
 
-model = GCR_ri(model_cnn,global_base=global_base,global_novel=global_novel,train_way=args.train_way,\
+model = GCR_ex(model_cnn,global_base=global_base,global_novel=global_novel,train_way=args.train_way,\
     test_way=args.test_way, shot=args.shot,query=args.query,query_val=args.query_val,f_dim=args.feature_dim).to(device)
 
 # Create loss criterion & optimizer
