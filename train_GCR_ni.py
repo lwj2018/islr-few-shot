@@ -6,7 +6,7 @@ import torch.nn.functional as F
 from torch.utils.data import DataLoader
 
 from models.GCR_ni import GCR_ni
-from models.gcrHCN import gcrHCN
+from models.gcrHCN_origin import gcrHCN
 from models.Hallucinator import Hallucinator
 from utils.ioUtils import *
 from utils.critUtils import loss_for_gcr, loss_for_gcr_relation
@@ -17,16 +17,16 @@ from utils.dataUtils import getDataloader
 from Arguments import Arguments
 
 # Hyper params 
-epochs = 10
-learning_rate = 1e-4
+epochs = 20
+learning_rate = 1e-3
 # Options
 shot = 5
 dataset = 'isl'
 args = Arguments(shot,dataset)
-store_name = dataset + '_GCR_ni' + '_%dshot'%(shot) + '_f%d'%(args.feature_dim)
+store_name = dataset + '_GCR_ni' + '_%dshot'%(args.shot)
 summary_name = 'runs/' + store_name
-cnn_ckpt = '/home/liweijie/projects/islr-few-shot/checkpoint/HCN_5shot_f128_best.pth.tar'
-global_ckpt = '/home/liweijie/projects/islr-few-shot/checkpoint/global_proto_5shot_f128_best.pth.tar'
+cnn_ckpt = '/home/liweijie/projects/islr-few-shot/checkpoint/20200419_HCN_best.pth.tar'
+global_ckpt = '/home/liweijie/projects/islr-few-shot/checkpoint/20200419_global_proto_best.pth.tar'
 gcrr_ckpt = None#'/home/liweijie/projects/few-shot/checkpoint/20200403_miniImage_GCR_r_checkpoint.pth.tar'
 checkpoint = None#'/home/liweijie/projects/islr-few-shot/checkpoint/isl_GCR_ni_5shot_f128_10ep_best.pth.tar'
 # checkpoint = '/home/liweijie/projects/islr-few-shot/checkpoint/isl_GCR_ri_5shot_10reserve_best.pth.tar'#5-shot
@@ -53,7 +53,8 @@ model_cnn = gcrHCN(f_dim=args.feature_dim).to(device)
 #     test_way=args.test_way, shot=args.shot,query=args.query,query_val=args.query_val,f_dim=args.feature_dim).to(device)
 # Resume model
 if cnn_ckpt is not None:
-    resume_cnn_part_with_fc7(model_cnn,cnn_ckpt)
+    resume_cnn_part(model_cnn,cnn_ckpt)
+    # resume_cnn_part_with_fc7(model_cnn,cnn_ckpt)
 if gcrr_ckpt is not None:
     resume_gcr_part(model, gcrr_ckpt, args.n_base)
 if checkpoint is not None:

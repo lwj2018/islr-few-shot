@@ -180,7 +180,7 @@ def eval_gcr_relation(model, criterion,
         if i % log_interval == log_interval-1:
             recoder.log(epoch,i,len(valloader),mode='Eval')
 
-    return recoder.get_avg('val acc3'), numpy.array(statistic)
+    return recoder.get_avg('val acc1'), numpy.array(statistic)
 
 def test_gcr(model, criterion,
           valloader, device, epoch, 

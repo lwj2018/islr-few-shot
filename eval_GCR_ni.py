@@ -5,7 +5,7 @@ import torch
 import torch.nn.functional as F
 from torch.utils.data import DataLoader
 
-from models.GCR_ri import GCR_ri
+from models.GCR_ni import GCR_ni
 from models.gcrHCN_origin import gcrHCN
 from models.Hallucinator import Hallucinator
 from utils.ioUtils import *
@@ -20,19 +20,19 @@ from Arguments import Arguments
 epochs = 2000
 learning_rate = 1e-3
 # Options
-shot = 1
+shot = 5
 dataset = 'isl'
-# Get args
-args = Arguments(shot,dataset)
-store_name = 'eval_' + dataset + '_GCR_ri' + '_%dshot'%(args.shot)
+store_name = 'eval_' + dataset + '_GCR_ni' + '_%dshot'%(shot)
 summary_name = 'runs/' + store_name
-checkpoint = '/home/liweijie/projects/islr-few-shot/checkpoint/isl_GCR_ri_5shot_best.pth.tar'
+checkpoint = '/home/liweijie/projects/islr-few-shot/checkpoint/isl_GCR_ni_5shot_best.pth.tar'
 log_interval = 20
 device_list = '0'
 model_path = "./checkpoint"
 
 start_epoch = 0
 best_acc = 0.00
+# Get args
+args = Arguments(shot,dataset)
 # Use specific gpus
 os.environ["CUDA_VISIBLE_DEVICES"]=device_list
 # Device setting
@@ -46,7 +46,7 @@ val_loader = getValloader(dataset,args)
 
 model_cnn = gcrHCN().to(device)
 # model_gen = Hallucinator(args.feature_dim).to(device)
-model = GCR_ri(model_cnn,train_way=args.train_way,\
+model = GCR_ni(model_cnn,train_way=args.train_way,\
     test_way=args.test_way, shot=args.shot,query=args.query,query_val=args.query_val,f_dim=args.feature_dim).to(device)
 # Resume model
 if checkpoint is not None:

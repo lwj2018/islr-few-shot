@@ -54,3 +54,11 @@ Accuracies of pretrained HCN
 | 96                   | 74.66  | 85.90  | 29.70  |
 | 64                   | 73.20  | 85.65  | 23.40  |
 | 32                   | 68.38  | 82.60  | 11.50  |
+
+## New Ablation Study
+- train_epochs = 20
+| Model                       | 5-way 1-shot | 5-way 5-shot | 10-way 1-shot | 10-way 5-shot |
+| --------------------------- | ------------ | ------------ | ------------- | ------------- |
+| GCR                         |         |         |          |          |
+| GCR+relation                |    90.32     |    98.23     |    83.78      |    96.26      |
+| GCR+relation+induction      |    91.97     |    98.37     |    85.96      |    96.52      |
