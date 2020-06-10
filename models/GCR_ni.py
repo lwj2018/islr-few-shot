@@ -1,3 +1,6 @@
+'''
+    GCR + Relation, For failly comparison with GCR_ri
+'''
 import torch.nn as nn
 import torch
 import torch.nn.functional as F

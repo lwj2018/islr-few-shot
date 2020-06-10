@@ -1,5 +1,5 @@
 '''
-    Without relation module, simply expand the model capacity
+    GCR + Induction
 '''
 import torch.nn as nn
 import torch
@@ -8,12 +8,12 @@ import numpy as np
 from utils.metricUtils import euclidean_metric
 from utils.critUtils import convert_to_onehot
 
-class GCR_ex(nn.Module):
+class GCR_i(nn.Module):
     def __init__(self,baseModel,global_base=None,global_novel=None,
                 train_way=20,test_way=5,
                 shot=5,query=5,query_val=15,f_dim=1024,
                 z_dim=512):
-        super(GCR_ex,self).__init__()
+        super(GCR_i,self).__init__()
         self.train_way = train_way
         self.test_way = test_way
         self.shot = shot
@@ -24,8 +24,6 @@ class GCR_ex(nn.Module):
 
         self.baseModel = baseModel
         self.registrator = Registrator(f_dim,z_dim)
-        self.extra1 = Extra1(f_dim)
-        self.extra2 = Extra2(z_dim)
         self.induction = Induction(f_dim)
         self.global_base = global_base
         self.global_novel = global_novel
@@ -49,7 +47,7 @@ class GCR_ex(nn.Module):
         # shape of proto_new is: way(20 or 5) x z_dim(512)
         global_new, proto_new = self.registrator(support_set=torch.cat([self.global_base,self.global_novel]), query_set=proto_final)
         # shape of the dist_metric is: way x total_class
-        logits2 = euclidean_metric(self.extra2(proto_new), self.extra2(global_new))
+        logits2 = euclidean_metric(proto_new, global_new)
 
         similarity = F.normalize(logits2,1,-1)
         # similarity = logits2
@@ -58,13 +56,13 @@ class GCR_ex(nn.Module):
         # shape of feature is: way x f_dim(1600)
         # so the shape of result is (query x way) x way
         q_proto = self.baseModel(data_query)
-        logits = euclidean_metric(self.extra1(q_proto),self.extra1(feature))
+        logits = euclidean_metric(q_proto,feature)
         label = torch.arange(way).repeat(query)
         label = label.type(torch.cuda.LongTensor)
 
         gt3 = gt.repeat(query)
         # logits3 = euclidean_metric(proto.reshape(self.shot*way,-1),torch.cat([self.global_base,self.global_novel]))
-        logits3 = euclidean_metric(self.extra1(q_proto.reshape(query*way,-1)),self.extra1(torch.cat([self.global_base,self.global_novel])))
+        logits3 = euclidean_metric(q_proto.reshape(query*way,-1),torch.cat([self.global_base,self.global_novel]))
 
         return logits, label, logits2, gt, logits3, gt3
 
@@ -107,26 +105,44 @@ class Registrator(nn.Module):
         query_set_2 = self.fc_params_query(query_set)
         return support_set_2, query_set_2
 
-class Extra1(nn.Module):
+class Relation1(nn.Module):
     def __init__(self,h_dim):
-        super(Extra1, self).__init__()
+        super(Relation1, self).__init__()
         self.fc1 = nn.Linear(h_dim,1600)
         self.fc2 = nn.Linear(1600,200)
+        self.fc3 = nn.Linear(200,1)
 
-    def forward(self,x):
+    def forward(self,x1,x2):
+        n = x1.shape[0]
+        m = x2.shape[0]
+        x1 = x1.unsqueeze(1).expand(n, m, -1)
+        x2 = x2.unsqueeze(0).expand(n, m, -1)
+        x = torch.cat([x1,x2],2)
         x = F.relu(self.fc1(x))
         x = F.relu(self.fc2(x))
+        x = self.fc3(x)
+        # x = F.sigmoid(x)
+        x = x.squeeze(-1)
         return x
 
-class Extra2(nn.Module):
+class Relation2(nn.Module):
     def __init__(self,h_dim):
-        super(Extra2, self).__init__()
+        super(Relation2, self).__init__()
         self.fc1 = nn.Linear(h_dim,512)
         self.fc2 = nn.Linear(512,64)
+        self.fc3 = nn.Linear(64,1)
 
-    def forward(self,x):
+    def forward(self,x1,x2):
+        n = x1.shape[0]
+        m = x2.shape[0]
+        x1 = x1.unsqueeze(1).expand(n, m, -1)
+        x2 = x2.unsqueeze(0).expand(n, m, -1)
+        x = torch.cat([x1,x2],2)
         x = F.relu(self.fc1(x))
         x = F.relu(self.fc2(x))
+        x = self.fc3(x)
+        # x = F.sigmoid(x)
+        x = x.squeeze(-1)
         return x
 
 class Induction(nn.Module):

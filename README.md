@@ -57,8 +57,23 @@ Accuracies of pretrained HCN
 
 ## New Ablation Study
 - train_epochs = 20
+### Standard FSL
 | Model                       | 5-way 1-shot | 5-way 5-shot | 10-way 1-shot | 10-way 5-shot |
 | --------------------------- | ------------ | ------------ | ------------- | ------------- |
-| GCR                         |         |         |          |          |
+| Without L_{gfsl}            |    87.70     |    97.15     |    79.45      |    94.40      |
+| GCR                         |    87.08     |    98.05     |    79.14      |    95.24      |
 | GCR+relation                |    90.32     |    98.23     |    83.78      |    96.26      |
 | GCR+relation+induction      |    91.97     |    98.37     |    85.96      |    96.52      |
+### Generalized FSL
+| Model                       | Accu_a | Accu_b | Accu_n |
+| --------------------------- | ------ | ------ | ------ |
+| Without L_{gfsl}            |  71.66 |  80.63 |  35.80 |
+| GCR                         |  73.08 |  81.03 |  41.30 |
+| GCR+relation                |  70.90 |  76.45 |  48.70 |
+| GCR+relation+induction      |  73.56 |  79.08 |  51.50 |
+
+## Tune model for C_{base}
+| Model                       | Accu_a | Accu_b | Accu_n |
+| --------------------------- | ------ | ------ | ------ |
+| r1 800, r2 256              |  73.60 |  79.23 |  51.10 |
+| r1 1600, r2 512             |  72.26 |  77.93 |  49.60 |

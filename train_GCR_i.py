@@ -5,7 +5,7 @@ import torch
 import torch.nn.functional as F
 from torch.utils.data import DataLoader
 
-from models.GCR import GCR
+from models.GCR_i import GCR_i
 from models.gcrHCN_origin import gcrHCN
 from models.Hallucinator import Hallucinator
 from utils.ioUtils import *
@@ -24,12 +24,12 @@ shot = 1
 dataset = 'isl'
 # Get args
 args = Arguments(shot,dataset)
-store_name = dataset + '_GCR' + '_%dshot'%(args.shot)
+store_name = dataset + '_GCR_i' + '_%dshot'%(args.shot)
 summary_name = 'runs/' + store_name
-cnn_ckpt = '/home/liweijie/projects/islr-few-shot/checkpoint/20200421_HCN_1shot_best.pth.tar'
-global_ckpt = '/home/liweijie/projects/islr-few-shot/checkpoint/20200421_global_proto_1shot_best.pth.tar'
+cnn_ckpt = '/home/liweijie/projects/islr-few-shot/checkpoint/20200419_HCN_best.pth.tar'
+global_ckpt = '/home/liweijie/projects/islr-few-shot/checkpoint/20200419_global_proto_best.pth.tar'
 cnngen_ckpt = None#'/home/liweijie/projects/islr-few-shot/checkpoint/20200412_HCN_GEN_best.pth.tar'
-checkpoint = None#'/home/liweijie/projects/islr-few-shot/checkpoint/isl_GCR_5shot_best.pth.tar'
+checkpoint = None#'/home/liweijie/projects/islr-few-shot/checkpoint/isl_GCR_i_5shot_best.pth.tar'
 log_interval = 20
 device_list = '0'
 model_path = "./checkpoint"
@@ -48,7 +48,7 @@ writer = SummaryWriter(os.path.join(summary_name, time.strftime('%Y-%m-%d %H:%M:
 train_loader, val_loader = getDataloader(dataset,args)
 
 model_cnn = gcrHCN().to(device)
-# model = GCR(model_cnn,train_way=args.train_way,\
+# model = GCR_i(model_cnn,train_way=args.train_way,\
 #     test_way=args.test_way, shot=args.shot,query=args.query,query_val=args.query_val,f_dim=args.feature_dim).to(device)
 # Resume model
 if cnn_ckpt is not None:
@@ -60,7 +60,7 @@ if checkpoint is not None:
     start_epoch, best_acc = resume_gcr_model(model, checkpoint, args.n_base)
 global_base, global_novel = load_global_proto(global_ckpt,args)
 
-model = GCR(model_cnn,global_base=global_base,global_novel=global_novel,train_way=args.train_way,\
+model = GCR_i(model_cnn,global_base=global_base,global_novel=global_novel,train_way=args.train_way,\
     test_way=args.test_way, shot=args.shot,query=args.query,query_val=args.query_val,f_dim=args.feature_dim).to(device)
 
 # Create loss criterion & optimizer
@@ -77,7 +77,7 @@ lr_scheduler_cnn = torch.optim.lr_scheduler.MultiStepLR(optimizer_cnn, milestone
 
 # Start training
 best_acc = 0.0
-print("Train with global proto integrated, Save integrated model")
+print(f"Training setting: {args.test_way} way {args.shot} shot")
 print("Training Started".center(60, '#'))
 for epoch in range(start_epoch, start_epoch + epochs):
     # Train the model

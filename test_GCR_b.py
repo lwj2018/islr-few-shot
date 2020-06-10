@@ -7,7 +7,7 @@ import torch.nn.functional as F
 from torch.utils.data import DataLoader
 
 from datasets.CSL_Isolated_Openpose_drop40 import CSL_Isolated_Openpose2
-from models.GCR_ri import GCR_ri
+from models.GCR_b import GCR_b
 from models.gcrHCN_origin import gcrHCN
 from models.Hallucinator import Hallucinator
 from utils.ioUtils import *
@@ -15,14 +15,15 @@ from utils.critUtils import loss_for_gcr
 from utils.testUtils import test_gcr
 from torch.utils.tensorboard import SummaryWriter
 from utils.dataUtils import getDataloader
+from utils.metricUtils import euclidean_metric
 from Arguments import Arguments
 
 # Options
 shot = 5
 dataset = 'isl'
-store_name = 'test_' + dataset + '_GCR_ri' + '_%dshot'%(shot)
+store_name = 'test_' + dataset + '_GCR_b' + '_%dshot'%(shot)
 summary_name = 'runs/' + store_name
-checkpoint = '/home/liweijie/projects/islr-few-shot/checkpoint/isl_GCR_ri_5shot_best.pth.tar'#5-shot
+checkpoint = '/home/liweijie/projects/islr-few-shot/checkpoint/isl_GCR_b_5shot_best.pth.tar'#5-shot
 # checkpoint = '/home/liweijie/projects/few-shot/checkpoint/20200404_miniImage_GCR_r_1shot_best.pth.tar'#1-shot
 log_interval = 20
 device_list = '0'
@@ -54,7 +55,7 @@ val_loader3 = DataLoader(dataset=valset3, batch_size = 8,
 
 model_cnn = gcrHCN().to(device)
 # model_gen = Hallucinator(args.feature_dim).to(device)
-model = GCR_ri(model_cnn,train_way=args.train_way,\
+model = GCR_b(model_cnn,train_way=args.train_way,\
     test_way=args.test_way, shot=args.shot,query=args.query,query_val=args.query_val,f_dim=args.feature_dim).to(device)
 # Resume model
 if checkpoint is not None:
@@ -66,11 +67,11 @@ criterion = nn.CrossEntropyLoss()
 # Start Test
 print("Test Started".center(60, '#'))
 for epoch in range(start_epoch, start_epoch+1):
-    acc = test_gcr(model,criterion,val_loader3,device,epoch,log_interval,writer,args,model.relation1)
+    acc = test_gcr(model,criterion,val_loader3,device,epoch,log_interval,writer,args,euclidean_metric)
     print('Batch accu_n on isl: {:.3f}'.format(acc))
-    acc = test_gcr(model,criterion,val_loader,device,epoch,log_interval,writer,args,model.relation1)
+    acc = test_gcr(model,criterion,val_loader,device,epoch,log_interval,writer,args,euclidean_metric)
     print('Batch accu_a on isl: {:.3f}'.format(acc))
-    acc = test_gcr(model,criterion,val_loader2,device,epoch,log_interval,writer,args,model.relation1)
+    acc = test_gcr(model,criterion,val_loader2,device,epoch,log_interval,writer,args,euclidean_metric)
     print('Batch accu_b on isl: {:.3f}'.format(acc))
 
 print("Test Finished".center(60, '#'))

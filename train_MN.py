@@ -6,7 +6,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torch.utils.data import DataLoader
 
-from models.gcrHCN import gcrHCN
+from models.gcrHCN_origin import gcrHCN
 from models.MN import MN
 from utils.ioUtils import *
 from utils.trainUtils import train_mn_pn
@@ -17,13 +17,13 @@ from Arguments import Arguments
 
 # Hyper params 
 epochs = 5
-learning_rate = 1e-3
+learning_rate = 1e-5
 # Options
 shot = 1
 dataset = 'isl'
 store_name = dataset + '_MN' + '_%dshot'%(shot)
 summary_name = 'runs/' + store_name
-cnn_ckpt = '/home/liweijie/projects/islr-few-shot/checkpoint/20200421_HCN_1shot_best.pth.tar'
+cnn_ckpt = '/home/liweijie/projects/islr-few-shot/checkpoint/20200419_HCN_best.pth.tar'
 checkpoint = None#'/home/liweijie/projects/islr-few-shot/checkpoint/isl_MN_5shot_best.pth.tar'
 log_interval = 20
 device_list = '0'

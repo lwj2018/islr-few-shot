@@ -148,7 +148,7 @@ def train_gcr_relation(model, criterion,
     avg_acc3 = AverageMeter()
     # Create recorder
     averagers = [avg_loss1, avg_loss2, avg_loss3, avg_acc1, avg_acc2, avg_acc3]
-    names = ['train loss','train loss2','train loss3','train acc','train acc2','train acc3']
+    names = ['train loss1','train loss2','train loss3','train acc1','train acc2','train acc3']
     recoder = Recorder(averagers,names,writer,batch_time,data_time)
     # Set trainning mode
     model.train()

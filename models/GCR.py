@@ -3,6 +3,7 @@ import torch
 import torch.nn.functional as F
 import numpy as np
 from utils.metricUtils import euclidean_metric
+from utils.critUtils import convert_to_onehot
 
 class GCR(nn.Module):
     def __init__(self,baseModel,global_base=None,global_novel=None,
@@ -15,6 +16,8 @@ class GCR(nn.Module):
         self.shot = shot
         self.query = query
         self.query_val = query_val
+        self.f_dim = f_dim
+        self.z_dim = z_dim
 
         self.baseModel = baseModel
         self.registrator = Registrator(f_dim,z_dim)
@@ -34,56 +37,46 @@ class GCR(nn.Module):
         proto = self.baseModel(data_shot)
         proto = proto.reshape(self.shot, way, -1)
 
-        if mode=='train':
-            which_novel = torch.gt(gt,79)
-            which_base = way-torch.numel(gt[which_novel])
-            if which_base < way:
-                proto_base = proto[:,:which_base,:]
-                proto_novel = proto[:,which_base:,:]
-                proto_base = proto_base.mean(dim=0)
-                if self.shot>1:
-                    # Synthesis module corresponds to section 3.2 of the thesis
-                    # Temporarily do not use Hallucinator
-                    ind_gen = torch.randperm(self.shot)
-                    train_num = np.random.randint(1,self.shot)
-                    proto_novel_f = proto_novel[ind_gen[:train_num],:,:]
-                    weight_arr = np.random.rand(train_num)
-                    weight_arr = weight_arr/np.sum(weight_arr)
-                    # Generate a new sample
-                    # shape of proto_novel_f is: shot x novel_class x f_dim(1600)
-                    proto_novel_f = (torch.from_numpy(weight_arr.reshape(-1,1,1)).type(torch.float).cuda()*proto_novel_f).sum(dim=0)
-                    # Corresponds to episodic repesentations in the thesis
-                    # After sum or mean, shape of protos are: class x f_dim(1600)
-                else:
-                    proto_novel_f = proto_novel.mean(dim=0)
-                proto_final = torch.cat([proto_base, proto_novel_f],0)
-            else:
-                proto_final = proto.reshape(self.shot,way,-1).mean(dim=0)
-        else:
-            proto_final = proto.mean(dim=0)
+        proto_final = proto.mean(0)
 
-        # shape of global_new is: total_class(100) x hidden_dim
-        # shape of proto_new is: way(20 or 5) x hidden_dim
+        # shape of global_new is: total_class(100) x z_dim(512)
+        # shape of proto_new is: way(20 or 5) x z_dim(512)
         global_new, proto_new = self.registrator(support_set=torch.cat([self.global_base,self.global_novel]), query_set=proto_final)
         # shape of the dist_metric is: way x total_class
         logits2 = euclidean_metric(proto_new, global_new)
 
-        label = torch.arange(way).repeat(query)
-        label = label.type(torch.cuda.LongTensor)
-        similarity = F.softmax(logits2)
+        similarity = F.normalize(logits2,1,-1)
+        # similarity = logits2
         feature = torch.matmul(similarity, torch.cat([self.global_base,self.global_novel]))
         # shape of data_query is: (query x way) x ...
-        # shape of feature is: way x feature_dim
+        # shape of feature is: way x f_dim(1600)
         # so the shape of result is (query x way) x way
-        logits = euclidean_metric(self.baseModel(data_query),feature)
+        q_proto = self.baseModel(data_query)
+        logits = euclidean_metric(q_proto,feature)
+        label = torch.arange(way).repeat(query)
+        label = label.type(torch.cuda.LongTensor)
 
-        return logits, label, logits2, gt
+        gt3 = gt.repeat(query)
+        # logits3 = euclidean_metric(proto.reshape(self.shot*way,-1),torch.cat([self.global_base,self.global_novel]))
+        logits3 = euclidean_metric(q_proto.reshape(query*way,-1),torch.cat([self.global_base,self.global_novel]))
+
+        return logits, label, logits2, gt, logits3, gt3
+
+    def get_feature(self, x):
+        return self.baseModel(x)
 
     def get_optim_policies(self,lr):
         return [
             {'params':self.registrator.parameters(),'lr':lr},
             {'params':self.global_base,'lr':lr},
-            {'params':self.global_novel,'lr':lr}
+            {'params':self.global_novel,'lr':lr},
+        ]
+
+    def get_finetune_policies(self,lr):
+        return [
+            {'params':self.registrator.parameters(),'lr':lr},
+            {'params':self.global_base,'lr':lr},
+            {'params':self.global_novel,'lr':lr},
         ]
         
 

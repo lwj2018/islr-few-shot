@@ -5,26 +5,26 @@ import torch
 import torch.nn.functional as F
 from torch.utils.data import DataLoader
 
-from models.GCR import GCR
+from models.GCR_b import GCR_b
 from models.gcrHCN_origin import gcrHCN
 from models.Hallucinator import Hallucinator
 from utils.ioUtils import *
-from utils.critUtils import loss_for_gcr_relation
-from utils.trainUtils import train_gcr_relation
-from utils.testUtils import eval_gcr_relation
+from utils.critUtils import loss_for_gcr
+from utils.trainUtils import train_gcr
+from utils.testUtils import eval_gcr
 from torch.utils.tensorboard import SummaryWriter
 from utils.dataUtils import getDataloader
 from Arguments import Arguments
 
 # Hyper params 
 epochs = 20
-learning_rate = 1e-6#default 1e-5
+learning_rate = 1e-5#default 1e-5
 # Options
 shot = 1
 dataset = 'isl'
 # Get args
 args = Arguments(shot,dataset)
-store_name = dataset + '_GCR' + '_%dshot'%(args.shot)
+store_name = dataset + '_GCR_b' + '_%dshot'%(args.shot)
 summary_name = 'runs/' + store_name
 cnn_ckpt = '/home/liweijie/projects/islr-few-shot/checkpoint/20200421_HCN_1shot_best.pth.tar'
 global_ckpt = '/home/liweijie/projects/islr-few-shot/checkpoint/20200421_global_proto_1shot_best.pth.tar'
@@ -60,11 +60,11 @@ if checkpoint is not None:
     start_epoch, best_acc = resume_gcr_model(model, checkpoint, args.n_base)
 global_base, global_novel = load_global_proto(global_ckpt,args)
 
-model = GCR(model_cnn,global_base=global_base,global_novel=global_novel,train_way=args.train_way,\
+model = GCR_b(model_cnn,global_base=global_base,global_novel=global_novel,train_way=args.train_way,\
     test_way=args.test_way, shot=args.shot,query=args.query,query_val=args.query_val,f_dim=args.feature_dim).to(device)
 
 # Create loss criterion & optimizer
-criterion = loss_for_gcr_relation()
+criterion = loss_for_gcr()
 
 policies = model.get_optim_policies(learning_rate)
 optimizer = torch.optim.SGD(policies, momentum=0.9)
@@ -77,13 +77,13 @@ lr_scheduler_cnn = torch.optim.lr_scheduler.MultiStepLR(optimizer_cnn, milestone
 
 # Start training
 best_acc = 0.0
-print("Train with global proto integrated, Save integrated model")
+print(f"Training setting: {args.test_way} way {args.shot} shot")
 print("Training Started".center(60, '#'))
 for epoch in range(start_epoch, start_epoch + epochs):
     # Train the model
-    train_gcr_relation(model,criterion,optimizer,optimizer_cnn,train_loader,device,epoch,log_interval,writer,args)
+    train_gcr(model,criterion,optimizer,optimizer_cnn,train_loader,device,epoch,log_interval,writer,args)
     # Eval the model
-    acc,_ = eval_gcr_relation(model,criterion,val_loader,device,epoch,log_interval,writer,args)
+    acc,_ = eval_gcr(model,criterion,val_loader,device,epoch,log_interval,writer,args)
     # Save model
     # remember best acc and save checkpoint
     is_best = acc>best_acc
